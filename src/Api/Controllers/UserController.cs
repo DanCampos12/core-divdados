@@ -46,7 +46,7 @@ public class UserController : Controller
     }
 
     /// <summary>
-    /// Método que adiciona um usuário
+    /// Método que atualiza um usuário
     /// </summary>
     /// <param name="id">Id do usuário</param>
     /// <param name="command">Informações do usuário</param>
@@ -55,6 +55,22 @@ public class UserController : Controller
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpPut("v1/users/{id:guid}")]
     public async Task<IActionResult> PostUser(Guid id, [FromBody] UpdateUserCommand command)
+    {
+        command.Id = id;
+        var commandResult = await _mediator.Send(command);
+        return Response(commandResult);
+    }
+
+    /// <summary>
+    /// Método que remove um usuário
+    /// </summary>
+    /// <param name="id">Id do usuário</param>
+    /// <param name="command">Informações do usuário</param>
+    /// <returns>Usuário</returns>
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Guid))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpDelete("v1/users/{id:guid}")]
+    public async Task<IActionResult> DeleteUser(Guid id, [FromBody] DeleteUserCommand command)
     {
         command.Id = id;
         var commandResult = await _mediator.Send(command);

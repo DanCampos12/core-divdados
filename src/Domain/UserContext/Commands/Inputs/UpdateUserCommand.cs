@@ -18,6 +18,7 @@ public class UpdateUserCommand : Command<UpdateUserCommandResult>
     {
         AddNotifications(new Contract()
             .Requires()
+            .IsNotNullOrEmpty(Id.ToString(), nameof(Id), "Id do usuário é obrigatório")
             .IsNotNullOrEmpty(Name, nameof(Name), "Nome do usuário é obrigatório")
             .HasMaxLengthIfNotNullOrEmpty(Name, 50, nameof(Name), "Nome do usuário não pode ter mais que 50 caracteres")
             .IsNotNullOrEmpty(Surname, nameof(Surname), "Sobrenome do usuário é obrigatório")
