@@ -14,11 +14,13 @@ public sealed class CreateUserHandler : Handler<CreateUserCommand, CreateUserCom
 {
     private readonly IUserRepository _userRepository;
     private readonly IUow _uow;
+    private readonly CreateUserCommandResult _commandResult;
 
     public CreateUserHandler(IUserRepository userRepository, IUow uow)
     {
         _userRepository = userRepository;
         _uow = uow;
+        _commandResult = new();
     }
 
     public override Task<CreateUserCommandResult> Handle(CreateUserCommand command, CancellationToken ct)
@@ -42,10 +44,10 @@ public sealed class CreateUserHandler : Handler<CreateUserCommand, CreateUserCom
         Validate(user);
         if (Invalid) return Incomplete();
 
-        _userRepository.Add(user);
+        _commandResult.User = _userRepository.Add(user);
         _uow.Commit();
 
-        return Complete(user);
+        return Complete(_commandResult.User);
     }
 
     private void Validate(User user)

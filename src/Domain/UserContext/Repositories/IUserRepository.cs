@@ -6,9 +6,10 @@ namespace Core.Divdados.Domain.UserContext.Repositories;
 
 public interface IUserRepository
 {
-    void Add(User user);
-    void Update(User user);
-    void Delete(User user);
-    UserResult Get(Guid id);
+    User Get(Guid id);
+    UserResult GetResult(Guid id);
+    UserResult Add(User user);
+    UserResult Update(User user);
+    Guid Delete(User user);
     bool CheckExist(string email);
 }

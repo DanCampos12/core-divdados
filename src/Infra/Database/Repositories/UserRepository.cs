@@ -11,17 +11,35 @@ public class UserRepository : IUserRepository
 {
     public UserDataContext _context;
 
-    public UserRepository(UserDataContext context) =>
-        _context = context;
+    public UserRepository(UserDataContext context) => _context = context;
 
-    public void Add(User user) =>
+    public User Get(Guid id) => _context.Users
+        .Where(user => user.Id.Equals(id))
+        .FirstOrDefault();
+
+    public UserResult GetResult(Guid id) =>
+        GetUserResultQuery(id).FirstOrDefault();
+
+
+    public UserResult Add(User user) {
         _context.Add(user);
+        return UserResult.Create(user);
+    }
 
-    public void Update(User user) =>
+    public UserResult Update(User user) {
         _context.Update(user);
+        return UserResult.Create(user);
+    }
 
-    public void Delete(User user) =>
+    public Guid Delete(User user)
+    {
         _context.Remove(user);
+        return user.Id;
+    }
+
+    public bool CheckExist(string email) => _context.Users
+        .Where(user => user.Email.Equals(email))
+        .Any();
 
     private IQueryable<UserResult> GetUserResultQuery(Guid id) =>
         from user in _context.Users
@@ -35,10 +53,4 @@ public class UserRepository : IUserRepository
             Age = user.Age,
             Sex = user.Sex
         };
-
-    public UserResult Get(Guid id) =>
-        GetUserResultQuery(id).FirstOrDefault();
-
-    public bool CheckExist(string email) => _context.Users
-        .Where(user => user.Email == email).Any();
 }

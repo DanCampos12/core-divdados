@@ -3,7 +3,7 @@ using Core.Divdados.Shared.Commands;
 
 namespace Core.Divdados.Domain.UserContext.Commands.Outputs;
 
-public class CreateUserCommandResult : CommandResult
+public class UpdateUserCommandResult : CommandResult
 {
     public UserResult User { get; set; }
 }

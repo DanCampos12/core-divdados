@@ -12,6 +12,7 @@ public sealed class User : Entity
     public string Password { get; private set; }
     public int Age { get; private set; }
     public char Sex { get; private set; }
+    public string LastSessionTokenId { get; private set; }
 
     private User () { }
     public User(
@@ -21,7 +22,7 @@ public sealed class User : Entity
         string password,
         int age,
         char sex) 
-    { 
+    {
         Name = name;
         Surname = surname;
         Email = email;
@@ -42,4 +43,13 @@ public sealed class User : Entity
             .IsGreaterThan(Age, 0, nameof(Age), "Idade do usuário é obrigatória e deve ser maior que 0 (zero)")
             .IsNotNullOrEmpty(Sex.ToString(), nameof(Age), "Sexo do usuário é obrigatório"));
     }
+
+    public void Update(string name, string surname, int age, char sex)
+    {
+        Name = name;
+        Surname = surname;
+        Age = age;
+        Sex = sex;
+        AddNotifications(this);
+    } 
 }

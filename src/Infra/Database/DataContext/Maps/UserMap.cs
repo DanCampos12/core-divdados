@@ -21,5 +21,6 @@ public class UserMap : ClassMap<User>
         builder.Property(e => e.Sex).HasMaxLength(1).HasColumnType("char");
         builder.Property(e => e.Email).HasMaxLength(100).HasColumnType("varchar");
         builder.Property(e => e.Password).HasMaxLength(100).HasColumnType("varchar");
+        builder.Property(e => e.LastSessionTokenId).HasColumnType("varchar");
     }
 }

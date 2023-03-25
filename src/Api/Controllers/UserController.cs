@@ -29,19 +29,35 @@ public class UserController : Controller
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(UserResult))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [HttpGet("v1/users/{id:guid}")]
-    public IActionResult GetUser(Guid id) => Ok(_userRepository.Get(id));
+    public IActionResult GetUser(Guid id) => Ok(_userRepository.GetResult(id));
 
     /// <summary>
     /// Método que adiciona um usuário
     /// </summary>
     /// <param name="command">Informações do usuário</param>
     /// <returns>Usuário</returns>
-    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Guid))]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(UserResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpPost("v1/users")]
     public async Task<IActionResult> PostUser([FromBody] CreateUserCommand command)
     {
         var commandResult = await _mediator.Send(command);
         return Response(commandResult, HttpStatusCode.Created);
+    }
+
+    /// <summary>
+    /// Método que adiciona um usuário
+    /// </summary>
+    /// <param name="id">Id do usuário</param>
+    /// <param name="command">Informações do usuário</param>
+    /// <returns>Usuário</returns>
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResult))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpPut("v1/users/{id:guid}")]
+    public async Task<IActionResult> PostUser(Guid id, [FromBody] UpdateUserCommand command)
+    {
+        command.Id = id;
+        var commandResult = await _mediator.Send(command);
+        return Response(commandResult);
     }
 }
