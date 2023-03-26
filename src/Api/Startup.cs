@@ -36,6 +36,7 @@ public class Startup
         services.Configure<SettingsModel>(_section);
         services.Configure<GzipCompressionProviderOptions>(opt => opt.Level = System.IO.Compression.CompressionLevel.Fastest);
         services.AddResponseCompression(opt => opt.Providers.Add<GzipCompressionProvider>());
+        services.AddAuthentication(_settingsModel);
         services.AddDomainDependencies(_settingsModel);
         services.AddSwagger();
         services.AddMediator();

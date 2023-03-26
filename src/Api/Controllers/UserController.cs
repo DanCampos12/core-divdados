@@ -29,7 +29,7 @@ public class UserController : Controller
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(UserResult))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [HttpGet("v1/users/{id:guid}")]
-    public IActionResult GetUser(Guid id) => Ok(_userRepository.GetResult(id));
+    public IActionResult GetUser(Guid id) => Ok(_userRepository.GetUserResult(id));
 
     /// <summary>
     /// Método que adiciona um usuário

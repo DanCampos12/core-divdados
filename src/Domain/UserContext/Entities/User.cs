@@ -51,5 +51,15 @@ public sealed class User : Entity
         Age = age;
         Sex = sex;
         AddNotifications(this);
-    } 
+    }
+
+    public void UpdatePassword(string password)
+    {
+        Password = password;
+    }
+
+    public void UpdateToken(string idToken)
+    {
+        LastSessionTokenId = idToken;
+    }
 }

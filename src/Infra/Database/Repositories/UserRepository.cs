@@ -17,29 +17,29 @@ public class UserRepository : IUserRepository
         .Where(user => user.Id.Equals(id))
         .FirstOrDefault();
 
-    public UserResult GetResult(Guid id) =>
+    public User GetByEmail(string email) => _context.Users
+        .Where(user => user.Email.Equals(email))
+        .FirstOrDefault();
+
+    public UserResult GetUserResult(Guid id) =>
         GetUserResultQuery(id).FirstOrDefault();
 
 
     public UserResult Add(User user) {
-        _context.Add(user);
+        _context.Users.Add(user);
         return UserResult.Create(user);
     }
 
     public UserResult Update(User user) {
-        _context.Update(user);
+        _context.Users.Update(user);
         return UserResult.Create(user);
     }
 
     public Guid Delete(User user)
     {
-        _context.Remove(user);
+        _context.Users.Remove(user);
         return user.Id;
     }
-
-    public bool CheckExist(string email) => _context.Users
-        .Where(user => user.Email.Equals(email))
-        .Any();
 
     private IQueryable<UserResult> GetUserResultQuery(Guid id) =>
         from user in _context.Users

@@ -15,6 +15,7 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
     <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="9.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="7.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.PlatformAbstractions" Version="1.1.0" />
@@ -22,9 +23,9 @@
   </ItemGroup>
 
   <ItemGroup>
-	<ProjectReference Include="..\Shared\Core.Divdados.Shared.csproj" />
 	<ProjectReference Include="..\Domain\Core.Divdados.Domain.csproj" />
 	<ProjectReference Include="..\Infra\Database\Core.Divdados.Infra.SQL.csproj" />
+	<ProjectReference Include="..\Shared\Core.Divdados.Shared.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,6 @@
-﻿namespace Core.Divdados.Api;
+﻿namespace Core.Divdados.Domain.UserContext.Entities;
 
-public class SettingsModel
+public class Settings
 {
     public string Environment { get; set; }
     public string ConnectionString { get; set; }
