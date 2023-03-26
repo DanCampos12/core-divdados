@@ -12,7 +12,7 @@ namespace Core.Divdados.Domain.UserContext.Services;
 
 public sealed class AuthService
 {
-    public readonly JwtBearer _jwtBearer;
+    private readonly JwtBearer _jwtBearer;
 
     public AuthService(JwtBearer jwtBearer)
     {
@@ -33,7 +33,7 @@ public sealed class AuthService
         {
             Issuer = _jwtBearer.ValidIssuer,
             Audience = _jwtBearer.ValidAudience,
-            Expires = DateTime.UtcNow.AddSeconds(30),
+            Expires = DateTime.UtcNow.AddHours(1),
             Subject = new ClaimsIdentity(userCustomClaims),
             SigningCredentials = new SigningCredentials(
                 new SymmetricSecurityKey(key), 

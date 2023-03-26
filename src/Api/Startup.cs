@@ -36,7 +36,6 @@ public class Startup
         services.Configure<SettingsModel>(_section);
         services.Configure<GzipCompressionProviderOptions>(opt => opt.Level = System.IO.Compression.CompressionLevel.Fastest);
         services.AddResponseCompression(opt => opt.Providers.Add<GzipCompressionProvider>());
-        services.AddAuthentication(_settingsModel);
         services.AddDomainDependencies(_settingsModel);
         services.AddSwagger();
         services.AddMediator();
@@ -45,13 +44,14 @@ public class Startup
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
     }
 
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
         if (env.IsDevelopment())
             app.UseDeveloperExceptionPage();
         else
             app.UseHsts();
 
+        app.UseMiddleware<Authorizations.AuthorizationMiddleware>();
         app.UseHttpsRedirection();
         app.UseResponseCompression();
         app.UseCors(builder => builder

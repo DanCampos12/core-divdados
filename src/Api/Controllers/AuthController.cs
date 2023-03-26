@@ -1,10 +1,11 @@
-﻿using Core.Divdados.Domain.UserContext.Commands.Inputs;
-using Core.Divdados.Domain.UserContext.Commands.Outputs;
+﻿using Core.Divdados.Api.Authorizations;
+using Core.Divdados.Domain.UserContext.Commands.Inputs;
 using Core.Divdados.Domain.UserContext.Results;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Core.Divdados.Api.Controllers;
@@ -42,6 +43,7 @@ public class AuthController : Controller
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpPost("v1/users/{id:guid}/auth/refresh-token")]
+    [ServiceFilter(typeof(AuthorizationAttribute))]
     public async Task<IActionResult> RefreshToken(Guid id, [FromBody] RefreshTokenCommand command)
     {
         command.Id = id;
@@ -61,6 +63,7 @@ public class AuthController : Controller
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Guid))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpPost("v1/users/{id:guid}/auth/sign-out")]
+    [ServiceFilter(typeof(AuthorizationAttribute))]
     public async Task<IActionResult> SignOut(Guid id)
     {
         var command = new SignOutCommand() { Id = id };

@@ -4,6 +4,7 @@ public class SettingsModel
 {
     public string Environment { get; set; }
     public string ConnectionString { get; set; }
+    public string ClientId { get; set; }
     public JwtBearer JwtBearer { get; set; }
 }
 

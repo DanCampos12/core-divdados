@@ -1,13 +1,9 @@
-﻿using Core.Divdados.Shared.Uow;
-using Core.Divdados.Infra.SQL.Transactions;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Core.Divdados.Api.Authorizations;
 using Core.Divdados.Domain.UserContext.Repositories;
 using Core.Divdados.Infra.SQL.Repositories;
-using Core.Divdados.Domain.UserContext.Commands.Handlers;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Hosting;
-using System;
+using Core.Divdados.Infra.SQL.Transactions;
+using Core.Divdados.Shared.Uow;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Core.Divdados.Api.Configurations;
 
@@ -18,6 +14,7 @@ public static class DomainConfiguration
         services.AddProvider(settingsModel);
         services.AddTransient<IUow, Uow>();
         services.AddRepositories();
+        services.AddAuthorization();
     }
 
     public static void AddProvider(this IServiceCollection services, SettingsModel settingsModel)
@@ -29,5 +26,10 @@ public static class DomainConfiguration
     {
         services.AddTransient<IUserRepository, UserRepository>();
         services.AddTransient<IAuthRepository, AuthRepository>();
+    }
+
+    private static void AddAuthorization(this IServiceCollection services)
+    {
+        services.AddScoped<AuthorizationAttribute>();
     }
 }
