@@ -1,5 +1,4 @@
-﻿using Core.Divdados.Api.Authorizations;
-using Core.Divdados.Domain.UserContext.Commands.Inputs;
+﻿using Core.Divdados.Domain.UserContext.Commands.Inputs;
 using Core.Divdados.Domain.UserContext.Repositories;
 using Core.Divdados.Domain.UserContext.Results;
 using MediatR;
@@ -44,7 +43,6 @@ public class UserController : Controller
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(UserResult))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [HttpGet("v1/users/{id:guid}")]
-    [ServiceFilter(typeof(AuthorizationAttribute))]
     public IActionResult GetUser(Guid id) => Ok(_userRepository.GetUserResult(id));
 
     /// <summary>
@@ -56,7 +54,6 @@ public class UserController : Controller
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpPut("v1/users/{id:guid}")]
-    [ServiceFilter(typeof(AuthorizationAttribute))]
     public async Task<IActionResult> PostUser(Guid id, [FromBody] UpdateUserCommand command)
     {
         command.Id = id;
@@ -73,7 +70,6 @@ public class UserController : Controller
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Guid))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpDelete("v1/users/{id:guid}")]
-    [ServiceFilter(typeof(AuthorizationAttribute))]
     public async Task<IActionResult> DeleteUser(Guid id, [FromBody] DeleteUserCommand command)
     {
         command.Id = id;

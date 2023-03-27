@@ -49,7 +49,8 @@ public sealed class RefreshTokenHandler : Handler<RefreshTokenCommand, RefreshTo
         }
 
         var isValidToken = _authService.ValidateToken(command.Id, command.IdToken);
-        if (!isValidToken && !command.IdToken.Equals(user.LastSessionTokenId))
+        var isLastUserToken = command.IdToken.Equals(user.LastSessionTokenId);
+        if (!isValidToken && !isLastUserToken)
         {
             AddNotification(nameof(User), "Não foi possível autenticar o usuário");
             _authRepository.UpdateToken(user, null);

@@ -14,7 +14,6 @@ public static class DomainConfiguration
         services.AddProvider(settingsModel);
         services.AddTransient<IUow, Uow>();
         services.AddRepositories();
-        services.AddAuthorization();
     }
 
     public static void AddProvider(this IServiceCollection services, SettingsModel settingsModel)
@@ -26,10 +25,5 @@ public static class DomainConfiguration
     {
         services.AddTransient<IUserRepository, UserRepository>();
         services.AddTransient<IAuthRepository, AuthRepository>();
-    }
-
-    private static void AddAuthorization(this IServiceCollection services)
-    {
-        services.AddScoped<AuthorizationAttribute>();
     }
 }
