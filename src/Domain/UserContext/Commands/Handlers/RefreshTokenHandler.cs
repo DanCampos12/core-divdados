@@ -48,7 +48,7 @@ public sealed class RefreshTokenHandler : Handler<RefreshTokenCommand, RefreshTo
             return Incomplete();
         }
 
-        var isValidToken = _authService.ValidateToken(command.Id, command.IdToken);
+        var isValidToken = _authService.ValidateToken(command.IdToken, command.Id);
         var isLastUserToken = command.IdToken.Equals(user.LastSessionTokenId);
         if (!isValidToken && !isLastUserToken)
         {

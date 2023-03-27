@@ -7,6 +7,7 @@ using System.Text;
 using System;
 using System.Threading.Tasks;
 using System.Linq;
+using Core.Divdados.Domain.UserContext.Services;
 
 namespace Core.Divdados.Api.Authorizations;
 
@@ -14,13 +15,13 @@ public class AuthorizationMiddleware
 {
     private readonly RequestDelegate _requestDelegate;
     private readonly string _clientId;
-    private readonly JwtBearer _jwtBearer;
+    private readonly AuthService _authService;
 
     public AuthorizationMiddleware(RequestDelegate requestDelegate, IConfiguration configuration)
     {
         _requestDelegate = requestDelegate;
         _clientId = configuration.GetSection("Settings").Get<SettingsModel>().ClientId;
-        _jwtBearer = configuration.GetSection("Settings").Get<SettingsModel>().JwtBearer;
+        _authService = new AuthService(configuration.GetSection("Settings").Get<Settings>().JwtBearer);
     }
 
     public async Task Invoke(HttpContext context)
@@ -47,7 +48,7 @@ public class AuthorizationMiddleware
             return;
         }
 
-        if (!ValidateToken(headerAuthorization.Replace("Bearer ", "")))
+        if (!_authService.ValidateToken(headerAuthorization.Replace("Bearer ", "")))
         {
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             await context.Response.WriteAsync("Token inválido");
@@ -55,31 +56,5 @@ public class AuthorizationMiddleware
         }
 
         await _requestDelegate(context);
-    }
-
-    private bool ValidateToken(string idToken)
-    {
-        try
-        {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(_jwtBearer.SecretKey);
-            var validatedToken = tokenHandler.ValidateToken(idToken, new TokenValidationParameters()
-            {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = _jwtBearer.ValidIssuer,
-                ValidAudience = _jwtBearer.ValidAudience,
-                IssuerSigningKey = new SymmetricSecurityKey(key),
-                ClockSkew = TimeSpan.Zero
-            }, out var _);
-
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
     }
 }

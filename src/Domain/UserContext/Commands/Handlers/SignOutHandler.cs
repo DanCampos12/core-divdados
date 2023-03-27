@@ -2,11 +2,8 @@
 using Core.Divdados.Domain.UserContext.Commands.Outputs;
 using Core.Divdados.Domain.UserContext.Entities;
 using Core.Divdados.Domain.UserContext.Repositories;
-using Core.Divdados.Domain.UserContext.Results;
-using Core.Divdados.Domain.UserContext.Services;
 using Core.Divdados.Shared.Commands;
 using Core.Divdados.Shared.Uow;
-using Microsoft.Extensions.Configuration;
 using System.Threading;
 using System.Threading.Tasks;
 

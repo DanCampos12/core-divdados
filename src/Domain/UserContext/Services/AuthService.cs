@@ -43,7 +43,7 @@ public sealed class AuthService
         return tokenHandler.WriteToken(token);
     }
 
-    public bool ValidateToken(Guid userId, string idToken)
+    public bool ValidateToken(string idToken, Guid? userId = null)
     {
         try
         {
@@ -60,6 +60,8 @@ public sealed class AuthService
                 IssuerSigningKey = new SymmetricSecurityKey(key),
                 ClockSkew = TimeSpan.Zero
             }, out var _);
+
+            if (userId is null) return true;
 
             var claimsUserId = validatedToken.Claims.FirstOrDefault(x => x.Type.Equals("userId")).Value;
             return claimsUserId.Equals(userId.ToString());
