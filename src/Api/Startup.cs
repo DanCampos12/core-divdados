@@ -39,7 +39,7 @@ public class Startup
         services.AddDomainDependencies(_settingsModel);
         services.AddSwagger();
         services.AddMediator();
-        services.AddDbContext<UserDataContext>();
+        services.AddEntityFrameworkNpgsql().AddDbContext<UserDataContext>();
 
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
     }

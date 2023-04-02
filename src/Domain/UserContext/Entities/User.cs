@@ -1,6 +1,5 @@
-﻿using Flunt.Validations;
-using System;
-using Core.Divdados.Shared.Entities;
+﻿using Core.Divdados.Shared.Entities;
+using Flunt.Validations;
 
 namespace Core.Divdados.Domain.UserContext.Entities;
 
