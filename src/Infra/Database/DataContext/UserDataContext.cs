@@ -1,8 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Core.Divdados.Domain.UserContext.Entities;
-using System;
-using Flunt.Notifications;
+﻿using Core.Divdados.Domain.UserContext.Entities;
 using Core.Divdados.Infra.SQL.DataContext.Extensions;
+using Flunt.Notifications;
+using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace Core.Divdados.Infra.SQL.DataContext;
 
@@ -23,13 +23,12 @@ public class UserDataContext : DbContext
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
-        optionsBuilder.UseSqlServer(ConnectionString);
+        optionsBuilder.UseNpgsql(ConnectionString);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyDecimalTypeDefault();
         modelBuilder.ApplyDateTypeDefault();
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(UserDataContext).Assembly);
         modelBuilder.Ignore<Notification>();
     }
 }

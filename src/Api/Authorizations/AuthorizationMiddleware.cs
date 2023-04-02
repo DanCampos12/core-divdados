@@ -1,13 +1,10 @@
 ﻿using Core.Divdados.Domain.UserContext.Entities;
+using Core.Divdados.Domain.UserContext.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Text;
 using System;
-using System.Threading.Tasks;
 using System.Linq;
-using Core.Divdados.Domain.UserContext.Services;
+using System.Threading.Tasks;
 
 namespace Core.Divdados.Api.Authorizations;
 
@@ -30,7 +27,7 @@ public class AuthorizationMiddleware
         var headerAuthorization = context.Request.Headers["authorization"].ToString();
         var httpMethod = context.Request.Method.ToString();
         var httpPath = context.Request.Path.ToString();
-        var validPathsWithoutToken = new string[] { 
+        var registerPaths = new string[] { 
             "/v1/users", 
             "/v1/users/auth/sign-in", 
             "/v1/users/auth/refresh-token" };
@@ -42,7 +39,7 @@ public class AuthorizationMiddleware
             return;
         }
 
-        if (validPathsWithoutToken.Contains(httpPath.ToString()) && httpMethod.Equals("POST"))
+        if (registerPaths.Contains(httpPath.ToString()) && httpMethod.Equals("POST"))
         {
             await _requestDelegate(context);
             return;
