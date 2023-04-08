@@ -44,11 +44,11 @@ public sealed class SignInHandler : Handler<SignInCommand, SignInCommandResult>
         var user = _userRepository.GetByEmail(command.Email);
         if (user is null)
         {
-            AddNotification(nameof(User), $"O email informado ({ command.Email}) não corresponde a nenhum usuário");
+            AddNotification(nameof(User), $"O email informado ({command.Email}) não corresponde a nenhum usuário");
             return Incomplete();
         }
 
-        if (!user.Password.Equals(command.Password))
+        if (!AuthService.ValidatePassword(command.Password, user.Password))
         {
             AddNotification(nameof(User), "Senha inválida");
             return Incomplete();

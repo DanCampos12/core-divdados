@@ -3,6 +3,7 @@ using Core.Divdados.Domain.UserContext.Commands.Outputs;
 using Core.Divdados.Domain.UserContext.Entities;
 using Core.Divdados.Domain.UserContext.Repositories;
 using Core.Divdados.Domain.UserContext.Results;
+using Core.Divdados.Domain.UserContext.Services;
 using Core.Divdados.Shared.Commands;
 using Core.Divdados.Shared.Uow;
 using Flunt.Validations;
@@ -39,7 +40,7 @@ public sealed class UpdateUserHanler : Handler<UpdateUserCommand, UpdateUserComm
             return Incomplete();
         }
 
-        if (!user.Password.Equals(command.Password))
+        if (!AuthService.ValidatePassword(command.Password, user.Password))
         {
             AddNotification(nameof(command.Password), $"Senha informada não corresponde");
             return Incomplete();

@@ -25,7 +25,7 @@ public class CreateUserCommand : Command<CreateUserCommandResult>
             .IsNotNullOrEmpty(Email, nameof(Email), "Email do usuário é obrigatório")
             .HasMaxLengthIfNotNullOrEmpty(Email, 50, nameof(Email), "Email do usuário não pode ter mais que 100 caracteres")
             .IsNotNullOrEmpty(Password, nameof(Password), "Senha do usuário é obrigatória")
-            .HasMaxLengthIfNotNullOrEmpty(Password, 50, nameof(Password), "Senha do usuário não pode ter mais que 100 caracteres")
+            .HasMaxLengthIfNotNullOrEmpty(Password, 100, nameof(Password), "Senha do usuário não pode ter mais que 100 caracteres")
             .IsNotNullOrEmpty(ConfirmPassword, nameof(Password), "Confirmação de senha é obrigatória")
             .IsTrue(Password.Equals(ConfirmPassword), nameof(Password), "Senhas não correspondem")
             .IsGreaterThan(Age, 0, nameof(Age), "Idade do usuário é obrigatória e deve ser maior que 0 (zero)")

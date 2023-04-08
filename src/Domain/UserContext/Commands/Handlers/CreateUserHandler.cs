@@ -2,6 +2,7 @@
 using Core.Divdados.Domain.UserContext.Commands.Outputs;
 using Core.Divdados.Domain.UserContext.Entities;
 using Core.Divdados.Domain.UserContext.Repositories;
+using Core.Divdados.Domain.UserContext.Services;
 using Core.Divdados.Shared.Commands;
 using Core.Divdados.Shared.Uow;
 using Flunt.Validations;
@@ -35,7 +36,7 @@ public sealed class CreateUserHandler : Handler<CreateUserCommand, CreateUserCom
             name: command.Name,
             surname: command.Surname,
             email: command.Email,
-            password: command.Password,
+            password: AuthService.EncryptPassword(command.Password),
             age: command.Age,
             sex: command.Sex);
         AddNotifications(user);

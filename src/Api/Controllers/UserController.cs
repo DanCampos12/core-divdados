@@ -36,16 +36,6 @@ public class UserController : Controller
     }
 
     /// <summary>
-    /// Método que obtém um usuário
-    /// </summary>
-    /// <param name="id">Id do usuário</param>
-    /// <returns>Usuário</returns>
-    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(UserResult))]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [HttpGet("v1/users/{id:guid}")]
-    public IActionResult GetUser(Guid id) => Ok(_userRepository.GetUserResult(id));
-
-    /// <summary>
     /// Método que atualiza um usuário
     /// </summary>
     /// <param name="id">Id do usuário</param>

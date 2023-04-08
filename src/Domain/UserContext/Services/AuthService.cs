@@ -1,12 +1,11 @@
 ﻿using Core.Divdados.Domain.UserContext.Entities;
-using System.Security.Claims;
-using System.Text;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.IdentityModel.Tokens.Jwt;
-using Microsoft.IdentityModel.Tokens;
-using Core.Divdados.Domain.UserContext.Results;
-using Newtonsoft.Json;
 using System.Linq;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Core.Divdados.Domain.UserContext.Services;
 
@@ -70,5 +69,25 @@ public sealed class AuthService
         {
             return false;
         }
+    }
+
+    public static string EncryptPassword(string password)
+    {
+        var randomHash = new byte[16];
+        RandomNumberGenerator.Fill(randomHash);
+        var encryptedPassword = new Rfc2898DeriveBytes(password, randomHash, 10000, HashAlgorithmName.SHA256);
+        var encryptedPasswordHash = encryptedPassword.GetBytes(32);
+        var hashedPassword = $"{Convert.ToBase64String(encryptedPasswordHash)}.{Convert.ToBase64String(randomHash)}";
+        return hashedPassword;
+    }
+
+    public static bool ValidatePassword(string password, string hashedPassword)
+    {
+        var hashComposition = hashedPassword.Split(".");
+        var encryptedPasswordHash = Convert.FromBase64String(hashComposition[0]);
+        var randomGeneratedHash = Convert.FromBase64String(hashComposition[1]);
+        var encryptedEnteredPassword = new Rfc2898DeriveBytes(password, randomGeneratedHash, 10000, HashAlgorithmName.SHA256);
+        var encryptedEnteredPasswordHash = encryptedEnteredPassword.GetBytes(32);
+        return CryptographicOperations.FixedTimeEquals(encryptedPasswordHash, encryptedEnteredPasswordHash);
     }
 }
