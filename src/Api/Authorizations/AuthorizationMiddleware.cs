@@ -23,6 +23,7 @@ public class AuthorizationMiddleware
 
     public async Task Invoke(HttpContext context)
     {
+        context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
         var headerClientId = context.Request.Headers["x-client-id"].ToString();
         var headerAuthorization = context.Request.Headers["authorization"].ToString();
         var httpMethod = context.Request.Method.ToString();
@@ -31,6 +32,13 @@ public class AuthorizationMiddleware
             "/v1/users", 
             "/v1/users/auth/sign-in", 
             "/v1/users/auth/refresh-token" };
+
+        if (httpMethod.Equals("OPTIONS"))
+        {
+            context.Response.StatusCode = 200;
+            await _requestDelegate(context);
+            return;
+        }
 
         if (!_clientId.Equals(headerClientId))
         {
