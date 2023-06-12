@@ -8,8 +8,8 @@ namespace Core.Divdados.Domain.UserContext.Commands.Inputs;
 public class UpdateCategoryCommand : Command<UpdateCategoryCommandResult>
 {
     public Guid Id { get; set; }
-    public string Name { get; private set; }
-    public string Color { get; private set; }
+    public string Name { get; set; }
+    public string Color { get; set; }
     public Guid UserId { get; set; }
 
     public override bool Validate()

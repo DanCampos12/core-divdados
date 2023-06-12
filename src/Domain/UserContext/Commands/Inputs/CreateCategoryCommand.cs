@@ -7,8 +7,8 @@ namespace Core.Divdados.Domain.UserContext.Commands.Inputs;
 
 public class CreateCategoryCommand : Command<CreateCategoryCommandResult>
 {
-    public string Name { get; private set; }
-    public string Color { get; private set; }
+    public string Name { get; set; }
+    public string Color { get; set; }
     public Guid UserId { get; set; }
 
     public override bool Validate()

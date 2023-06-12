@@ -58,7 +58,7 @@ public sealed class CreateCategoryHandler : Handler<CreateCategoryCommand, Creat
     {
         AddNotifications(new Contract()
             .Requires()
-            .IsTrue(_userRepository.Get(userId) is null,
+            .IsFalse(_userRepository.Get(userId) is null,
                      nameof(User), $"Usuário inexistente"));
     }
 }
