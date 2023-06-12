@@ -40,6 +40,7 @@ public class CategoryRepository : ICategoryRepository
     private IQueryable<CategoryResult> GetCategoriesQuery(Guid userId) =>
         from category in _context.Categories
         where category.UserId.Equals(userId)
+        orderby category.Name
         select new CategoryResult
         {
             Id = category.Id,
