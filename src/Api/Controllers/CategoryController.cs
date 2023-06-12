@@ -76,10 +76,13 @@ public class CategoryController : Controller
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Guid))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpDelete("v1/users/{userId:guid}/categories/{id:guid}")]
-    public async Task<IActionResult> DeleteUser(Guid id, Guid userId, [FromBody] DeleteCategoryCommand command)
+    public async Task<IActionResult> DeleteUser(Guid id, Guid userId)
     {
-        command.Id = id;
-        command.UserId = userId;
+        var command = new DeleteCategoryCommand
+        {
+            Id = id,
+            UserId = userId
+        };
         var commandResult = await _mediator.Send(command);
         return Response(commandResult);
     }
