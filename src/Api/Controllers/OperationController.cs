@@ -58,7 +58,7 @@ public class OperationController : Controller
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpPut("v1/users/{userId:guid}/operations/{id:guid}")]
-    public async Task<IActionResult> PutCategory(Guid id, Guid userId, [FromBody] UpdateOperationCommand command)
+    public async Task<IActionResult> PutOperation(Guid id, Guid userId, [FromBody] UpdateOperationCommand command)
     {
         command.Id = id;
         command.UserId = userId;
@@ -66,24 +66,24 @@ public class OperationController : Controller
         return Response(commandResult);
     }
 
-    ///// <summary>
-    ///// Método que remove uma categoria
-    ///// </summary>
-    ///// <param name="id">Id da categoria</param>
-    ///// <param name="userId">Id do usuário</param>
-    ///// <param name="command">Informações da categoria</param>
-    ///// <returns>Id da categoria</returns>
-    //[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Guid))]
-    //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-    //[HttpDelete("v1/users/{userId:guid}/categories/{id:guid}")]
-    //public async Task<IActionResult> DeleteUser(Guid id, Guid userId)
-    //{
-    //    var command = new DeleteCategoryCommand
-    //    {
-    //        Id = id,
-    //        UserId = userId
-    //    };
-    //    var commandResult = await _mediator.Send(command);
-    //    return Response(commandResult);
-    //}
+    /// <summary>
+    /// Método que remove uma operação
+    /// </summary>
+    /// <param name="id">Id da operação</param>
+    /// <param name="userId">Id do usuário</param>
+    /// <param name="command">Informações da operação</param>
+    /// <returns>Id da operação</returns>
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Guid))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpDelete("v1/users/{userId:guid}/operations/{id:guid}")]
+    public async Task<IActionResult> DeleteOperation(Guid id, Guid userId)
+    {
+        var command = new DeleteOperationCommand
+        {
+            Id = id,
+            UserId = userId
+        };
+        var commandResult = await _mediator.Send(command);
+        return Response(commandResult);
+    }
 }

@@ -9,25 +9,25 @@ using System.Threading.Tasks;
 
 namespace Core.Divdados.Domain.UserContext.Commands.Handlers;
 
-public sealed class DeleteCategoryHandler : Handler<DeleteCategoryCommand, DeleteCategoryCommandResult>
+public sealed class DeleteOperationHandler : Handler<DeleteOperationCommand, DeleteOperationCommandResult>
 {
-    private readonly ICategoryRepository _categoryRepository;
+    private readonly IOperationRepository _operationRepository;
     private readonly IUserRepository _userRepository;
     private readonly IUow _uow;
-    private readonly DeleteCategoryCommandResult _commandResult;
+    private readonly DeleteOperationCommandResult _commandResult;
 
-    public DeleteCategoryHandler(
-        ICategoryRepository categoryRepository,
+    public DeleteOperationHandler(
+        IOperationRepository operationRepository,
         IUserRepository userRepository,
         IUow uow)
     {
-        _categoryRepository = categoryRepository;
+        _operationRepository = operationRepository;
         _userRepository = userRepository;
         _uow = uow;
         _commandResult = new();
     }
 
-    public override Task<DeleteCategoryCommandResult> Handle(DeleteCategoryCommand command, CancellationToken ct)
+    public override Task<DeleteOperationCommandResult> Handle(DeleteOperationCommand command, CancellationToken ct)
     {
         if (!command.Validate())
         {
@@ -42,17 +42,17 @@ public sealed class DeleteCategoryHandler : Handler<DeleteCategoryCommand, Delet
             return Incomplete();
         }
 
-        var category = _categoryRepository.GetCategory(command.Id, command.UserId);
-        if (category is null)
+        var operation = _operationRepository.GetOperation(command.Id, command.UserId);
+        if (operation is null)
         {
-            AddNotification(nameof(command.Id), $"Categoria não encontrada");
+            AddNotification(nameof(command.Id), $"Operação não encontrada");
             return Incomplete();
         }
 
-        AddNotifications(category);
+        AddNotifications(operation);
         if (Invalid) return Incomplete();
 
-        _commandResult.Id = _categoryRepository.Delete(category);
+        _commandResult.Id = _operationRepository.Delete(operation);
         _uow.Commit();
 
         return Complete(_commandResult.Id);
