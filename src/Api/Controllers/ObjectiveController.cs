@@ -26,7 +26,7 @@ public class ObjectiveController : Controller
     /// </summary>
     /// <param name="userId">Id do usuário</param>
     /// <returns>Objetivos</returns>
-    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(UserResult))]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ObjectResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpGet("v1/users/{userId:guid}/objectives")]
     public IActionResult GetObjectives(Guid userId) =>
@@ -38,7 +38,7 @@ public class ObjectiveController : Controller
     /// <param name="userId">Id do usuário</param>
     /// <param name="command">Informações do objetivo</param>
     /// <returns>Operação</returns>
-    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(UserResult))]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ObjectResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpPost("v1/users/{userId:guid}/objectives")]
     public async Task<IActionResult> PostObjective(Guid userId, [FromBody] CreateObjectiveCommand command)

@@ -26,10 +26,11 @@ public class ObjectiveRepository : IObjectiveRepository
         var objectivesResult = new List<ObjectiveResult>();
         var objectives = GetObjectivesQuery(userId);
         var totalValue = GetTotalValue(userId);
+        if (totalValue < 0) totalValue = 0;
 
         foreach (var objective in objectives)
         {
-            var progress = totalValue / objective.Value;
+            var progress = (totalValue / objective.Value);
             if (progress > 1) progress = 1.0M;
             objectivesResult.Add(ObjectiveResult.Create(objective, progress));
             totalValue -= objective.Value;
@@ -57,11 +58,11 @@ public class ObjectiveRepository : IObjectiveRepository
 
     private IQueryable<Objective> GetObjectivesQuery(Guid userId) =>
         from objective in _context.Objectives
-        where objective.Id.Equals(userId)
+        where objective.UserId.Equals(userId)
         orderby objective.Order
         select objective;
 
     private decimal GetTotalValue(Guid userId) => _context.Operations
         .Where(operation => operation.UserId.Equals(userId))
-        .Sum(operation => operation.Type.Equals("I") ? operation.Value : (operation.Value * -1));
+        .Sum(operation => operation.Type.ToString().Equals("I") ? operation.Value : (operation.Value * -1));
 }
