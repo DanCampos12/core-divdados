@@ -11,28 +11,28 @@ using System.Threading.Tasks;
 
 namespace Core.Divdados.Domain.UserContext.Commands.Handlers;
 
-public sealed class UpdateOperationHandler : Handler<UpdateOperationCommand, UpdateOperationCommandResult>
+public sealed class UpdateEventHandler : Handler<UpdateEventCommand, UpdateEventCommandResult>
 {
-    private readonly IOperationRepository _operationRepository;
+    private readonly IEventRepository _eventRepository;
     private readonly ICategoryRepository _categoryRepository;
     private readonly IUserRepository _userRepository;
     private readonly IUow _uow;
-    private readonly UpdateOperationCommandResult _commandResult;
+    private readonly UpdateEventCommandResult _commandResult;
 
-    public UpdateOperationHandler(
-        IOperationRepository operationRepository,
+    public UpdateEventHandler(
+        IEventRepository eventRepository,
         ICategoryRepository categoryRepository,
         IUserRepository userRepository,
         IUow uow)
     {
-        _operationRepository = operationRepository;
+        _eventRepository = eventRepository;
         _categoryRepository = categoryRepository;
         _userRepository = userRepository;
         _uow = uow;
         _commandResult = new();
     }
 
-    public override Task<UpdateOperationCommandResult> Handle(UpdateOperationCommand command, CancellationToken ct)
+    public override Task<UpdateEventCommandResult> Handle(UpdateEventCommand command, CancellationToken ct)
     {
         if (!command.Validate())
         {
@@ -40,24 +40,24 @@ public sealed class UpdateOperationHandler : Handler<UpdateOperationCommand, Upd
             return Incomplete();
         }
 
-        var operation = _operationRepository.GetOperation(command.Id, command.UserId);
-        if (operation is null)
+        var @event = _eventRepository.GetEvent(command.Id, command.UserId);
+        if (@event is null)
         {
-            AddNotification(nameof(command.Id), $"Operação não encontrada");
+            AddNotification(nameof(command.Id), $"Evento não encontrado");
             return Incomplete();
         }
 
         Validate(command.UserId, command.CategoryId);
         if (Invalid) return Incomplete();
 
-        operation.Update(command.Value, command.Description, command.CategoryId);
-        AddNotifications(operation);
+        @event.Update(command.Value, command.Description, command.CategoryId);
+        AddNotifications(@event);
         if (Invalid) return Incomplete();
 
-        _commandResult.Operation = _operationRepository.Update(operation);
+        _commandResult.Event = _eventRepository.Update(@event);
         _uow.Commit();
 
-        return Complete(_commandResult.Operation);
+        return Complete(_commandResult.Event);
     }
 
     private void Validate(Guid userId, Guid categoryId)

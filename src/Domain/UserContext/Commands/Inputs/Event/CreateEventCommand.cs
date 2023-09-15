@@ -29,7 +29,7 @@ public class CreateEventCommand : Command<CreateEventCommandResult>
             .IsTrue(InitialDate <= FinalDate, nameof(FinalDate), "Data inicial deve ser menor ou igual a data final")
             .IsNotNullOrEmpty(Period.ToString(), nameof(Period), "Período é obrigatório")
             .IsNotNullOrEmpty(UserId.ToString(), nameof(UserId), "Id do usuário é obrigatório")
-            .IsNotNullOrEmpty(CategoryId.ToString(), nameof(CategoryId), "Categoria da operação é obrigatório"));
+            .IsNotNullOrEmpty(CategoryId.ToString(), nameof(CategoryId), "Categoria do evento é obrigatório"));
 
         return Valid;
     }

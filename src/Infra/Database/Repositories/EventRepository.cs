@@ -2,6 +2,7 @@
 using Core.Divdados.Domain.UserContext.Repositories;
 using Core.Divdados.Domain.UserContext.Results;
 using Core.Divdados.Infra.SQL.DataContext;
+using Core.Divdados.Shared.Uow;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,8 +13,13 @@ namespace Core.Divdados.Infra.SQL.Repositories;
 public class EventRepository : IEventRepository
 {
     public UserDataContext _context;
+    private readonly IUow _uow;
 
-    public EventRepository(UserDataContext context) => _context = context;
+    public EventRepository(UserDataContext context, IUow uow)
+    {
+        _context = context;
+        _uow = uow;
+    }
 
     public Event GetEvent(Guid id, Guid userId) => _context.Events
         .Where(x => x.Id.Equals(id) && x.UserId.Equals(userId))
@@ -45,12 +51,22 @@ public class EventRepository : IEventRepository
     }
 
     public EventResult Update(Event @event) {
+        var operationsToUpdate = _context.Operations.Where(x => x.EventId.Equals(@event.Id));
+
+        foreach (var operation in operationsToUpdate)
+            operation.Update(@event.Value, @event.Description, @event.CategoryId);
+
         _context.Events.Update(@event);
+        _context.Operations.UpdateRange(operationsToUpdate);
         return EventResult.Create(@event);
     }
 
     public Guid Delete(Event @event)
     {
+        var operationsToDelete = _context.Operations.Where(x => x.EventId.Equals(@event.Id));
+        _context.Operations.RemoveRange(operationsToDelete);
+        _uow.Commit();
+
         _context.Events.Remove(@event);
         return @event.Id;
     }
