@@ -37,7 +37,7 @@ public class ObjectiveController : Controller
     /// </summary>
     /// <param name="userId">Id do usuário</param>
     /// <param name="command">Informações do objetivo</param>
-    /// <returns>Operação</returns>
+    /// <returns>Objetivo</returns>
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ObjectResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpPost("v1/users/{userId:guid}/objectives")]
@@ -46,5 +46,23 @@ public class ObjectiveController : Controller
         command.UserId = userId;
         var commandResult = await _mediator.Send(command);
         return Response(commandResult, HttpStatusCode.Created);
+    }
+
+    /// <summary>
+    /// Método que atualiza um objetivo
+    /// </summary>
+    /// <param name="id">Id do objetivo</param>
+    /// <param name="userId">Id do usuário</param>
+    /// <param name="command">Informações do objetivo</param>
+    /// <returns>Objetivo</returns>
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResult))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpPut("v1/users/{userId:guid}/objectives/{id:guid}")]
+    public async Task<IActionResult> PutObjective(Guid id, Guid userId, [FromBody] UpdateObjectiveCommand command)
+    {
+        command.Id = id;
+        command.UserId = userId;
+        var commandResult = await _mediator.Send(command);
+        return Response(commandResult);
     }
 }

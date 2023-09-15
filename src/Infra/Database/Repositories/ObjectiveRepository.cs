@@ -30,11 +30,19 @@ public class ObjectiveRepository : IObjectiveRepository
 
         foreach (var objective in objectives)
         {
-            var progress = (totalValue / objective.Value);
-            if (progress > 1) progress = 1.0M;
-            objectivesResult.Add(ObjectiveResult.Create(objective, progress));
-            totalValue -= objective.Value;
-            if (totalValue < 0) totalValue = 0;
+            if (objective.Status.Equals("inProgress"))
+            {
+                var progress = (totalValue / objective.Value);
+                if (progress > 1) progress = 1.0M;
+                objectivesResult.Add(ObjectiveResult.Create(objective, progress));
+                totalValue -= objective.Value;
+                if (totalValue < 0) totalValue = 0;
+            } 
+            else
+            {
+                var progress = objective.Status.Equals("completed") ? 1.0M : 0.0M;
+                objectivesResult.Add(ObjectiveResult.Create(objective, progress));
+            }
         }
 
         return objectivesResult;

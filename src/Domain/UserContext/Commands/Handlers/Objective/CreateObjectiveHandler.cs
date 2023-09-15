@@ -49,7 +49,7 @@ public sealed class CreateObjectiveHandler : Handler<CreateObjectiveCommand, Cre
             status: "inProgress",
             order: _objectiveRepository.GetObjectives(command.UserId).Count(),
             userId: command.UserId);
-
+        
         AddNotifications(objective);
         if (Invalid) return Incomplete();
 
