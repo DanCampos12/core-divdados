@@ -120,4 +120,25 @@ public class ObjectiveController : Controller
         var commandResult = await _mediator.Send(command);
         return Response(commandResult);
     }
+
+    /// <summary>
+    /// Método que atualiza um objetivo
+    /// </summary>
+    /// <param name="id">Id do objetivo</param>
+    /// <param name="userId">Id do usuário</param>
+    /// <param name="command">Informações do objetivo</param>
+    /// <returns>Objetivo</returns>
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResult))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpPut("v1/users/{userId:guid}/objectives/{id:guid}/complete")]
+    public async Task<IActionResult> CompleteObjective(Guid id, Guid userId)
+    {
+        var command = new CompleteObjectiveCommand
+        {
+            Id = id,
+            UserId = userId
+        };
+        var commandResult = await _mediator.Send(command);
+        return Response(commandResult);
+    }
 }

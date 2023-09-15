@@ -53,7 +53,7 @@ public class ObjectiveRepository : IObjectiveRepository
 
     public ObjectiveResult Update(Objective objective) {
         _context.Objectives.Update(objective);
-        return ObjectiveResult.Create(objective, 0.0M);
+        return ObjectiveResult.Create(objective, objective.Status.Equals("completed") ? 1.0M : 0.0M);
     }
 
     public Guid Delete(Objective objective)
@@ -112,7 +112,7 @@ public class ObjectiveRepository : IObjectiveRepository
         }
 
         _context.Objectives.UpdateRange(objectives);
-        return objectives.Select(x => ObjectiveResult.Create(x, 0.0M));
+        return objectives.Select(x => ObjectiveResult.Create(x, x.Status.Equals("completed") ? 1.0M : 0.0M));
     }
 
     private IQueryable<Objective> GetObjectivesQuery(Guid userId) =>
