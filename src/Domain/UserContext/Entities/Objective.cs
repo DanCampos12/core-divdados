@@ -60,4 +60,10 @@ public sealed class Objective : Entity
         Order = order;
         AddNotifications(this);
     }
+
+    public void UpdateStatus(string status)
+    {
+        Status = status;
+        AddNotifications(this);
+    }
 }

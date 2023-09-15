@@ -85,4 +85,23 @@ public class ObjectiveController : Controller
         var commandResult = await _mediator.Send(command);
         return Response(commandResult);
     }
+
+    /// <summary>
+    /// Método que processa os objetivos
+    /// </summary>
+    /// <param name="userId">Id do usuário</param>
+    /// <param name="command">Informações do objetivo</param>
+    /// <returns>Objetivos processados</returns>
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ObjectiveResult))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpPost("v1/users/{userId:guid}/objectives/process")]
+    public async Task<IActionResult> ProcessObjectives(Guid userId)
+    {
+        var command = new ProcessObjectivesCommand
+        {
+            UserId = userId
+        };
+        var commandResult = await _mediator.Send(command);
+        return Response(commandResult);
+    }
 }

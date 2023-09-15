@@ -12,4 +12,5 @@ public interface IObjectiveRepository
     ObjectiveResult Add(Objective objective);
     ObjectiveResult Update(Objective objective);
     Guid Delete(Objective objective);
+    IEnumerable<ObjectiveResult> Process(Guid userId);
 }

@@ -2,12 +2,9 @@
 using Core.Divdados.Domain.UserContext.Repositories;
 using Core.Divdados.Domain.UserContext.Results;
 using Core.Divdados.Infra.SQL.DataContext;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Security.AccessControl;
 
 namespace Core.Divdados.Infra.SQL.Repositories;
 
@@ -76,6 +73,23 @@ public class ObjectiveRepository : IObjectiveRepository
         return objective.Id;
     }
 
+    public IEnumerable<ObjectiveResult> Process(Guid userId)
+    {
+        var objectivesToUpdateStatus = _context.Objectives
+            .Where(x => x.UserId.Equals(userId) && x.FinalDate < DateTime.Today);
+
+        foreach (var objectiveToUpdateStatus in objectivesToUpdateStatus)
+            objectiveToUpdateStatus.UpdateStatus("expired");
+
+        _context.Objectives.UpdateRange(objectivesToUpdateStatus);
+        _context.Notifications.AddRange(objectivesToUpdateStatus.Select(x => new Notification(
+            $"O objetivo {x.Description} com data término em {x.FinalDate:dd/MM/yyyy} expirou!",
+            false,
+            x.UserId)));
+
+        return objectivesToUpdateStatus.Select(x => ObjectiveResult.Create(x, 0.0M));
+    }
+
     private IQueryable<Objective> GetObjectivesQuery(Guid userId) =>
         from objective in _context.Objectives
         where objective.UserId.Equals(userId)
@@ -83,6 +97,6 @@ public class ObjectiveRepository : IObjectiveRepository
         select objective;
 
     private decimal GetUserOperationsTotalValue(Guid userId) => _context.Operations
-        .Where(operation => operation.UserId.Equals(userId))
+        .Where(operation => operation.UserId.Equals(userId) && operation.Effected)
         .Sum(operation => operation.Type.ToString().Equals("I") ? operation.Value : (operation.Value * -1));
 }

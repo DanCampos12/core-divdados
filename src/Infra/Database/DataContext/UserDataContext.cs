@@ -1,8 +1,8 @@
 ﻿using Core.Divdados.Domain.UserContext.Entities;
 using Core.Divdados.Infra.SQL.DataContext.Extensions;
-using Flunt.Notifications;
 using Microsoft.EntityFrameworkCore;
 using System;
+using Notification = Core.Divdados.Domain.UserContext.Entities.Notification;
 
 namespace Core.Divdados.Infra.SQL.DataContext;
 
@@ -14,6 +14,7 @@ public class UserDataContext : DbContext
     public virtual DbSet<Category> Categories { get; set; }
     public virtual DbSet<Operation> Operations { get; set; }
     public virtual DbSet<Objective> Objectives { get; set; }
+    public virtual DbSet<Notification> Notifications { get; set; }
 
     #endregion
 
@@ -32,6 +33,6 @@ public class UserDataContext : DbContext
     {
         modelBuilder.ApplyDecimalTypeDefault();
         modelBuilder.ApplyDateTypeDefault();
-        modelBuilder.Ignore<Notification>();
+        modelBuilder.Ignore<Flunt.Notifications.Notification>();
     }
 }
