@@ -85,4 +85,24 @@ public class OperationController : Controller
         var commandResult = await _mediator.Send(command);
         return Response(commandResult);
     }
+
+    /// <summary>
+    /// Método que efetua uma operação
+    /// </summary>
+    /// <param name="id">Id da operação</param>
+    /// <param name="userId">Id do usuário</param>
+    /// <returns>Categoria</returns>
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResult))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpPut("v1/users/{userId:guid}/operations/{id:guid}/effect")]
+    public async Task<IActionResult> EffectOperation(Guid id, Guid userId)
+    {
+        var command = new EffectOperationCommand
+        {
+            Id = id,
+            UserId = userId
+        };
+        var commandResult = await _mediator.Send(command);
+        return Response(commandResult);
+    }
 }

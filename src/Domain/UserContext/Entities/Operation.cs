@@ -53,4 +53,10 @@ public sealed class Operation : Entity
         CategoryId = categoryId; 
         AddNotifications(this);
     }
+
+    public void SetEffected (bool effected)
+    {
+        Effected = effected;
+        AddNotifications(this);
+    }
 }
