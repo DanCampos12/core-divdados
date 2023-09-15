@@ -40,7 +40,7 @@ public class OperationRepository : IOperationRepository
     private IQueryable<OperationResult> GetOperationsQuery(Guid userId) =>
         from operation in _context.Operations
         where operation.UserId.Equals(userId)
-        orderby operation.Date
+        orderby operation.Date descending
         select new OperationResult
         {
             Id = operation.Id,
