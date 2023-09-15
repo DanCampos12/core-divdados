@@ -24,7 +24,7 @@ public sealed class Notification : Entity
 
         AddNotifications(new Contract()
             .Requires()
-            .IsNotNullOrEmpty(Message, nameof(Message), "Mensage da notificação é obrigatória")
+            .IsNotNullOrEmpty(Message, nameof(Message), "Mensagem da notificação é obrigatória")
             .HasMaxLengthIfNotNullOrEmpty(Message, 100, nameof(Message), "Mensagem da notificação não pode ter mais que 100 caracteres")
             .IsNotNullOrEmpty(UserId.ToString(), nameof(UserId), "Id do usuário é obrigatório"));
     }

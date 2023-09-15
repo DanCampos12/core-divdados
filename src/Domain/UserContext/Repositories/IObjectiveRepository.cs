@@ -1,4 +1,5 @@
-﻿using Core.Divdados.Domain.UserContext.Entities;
+﻿using Core.Divdados.Domain.UserContext.Commands.Inputs;
+using Core.Divdados.Domain.UserContext.Entities;
 using Core.Divdados.Domain.UserContext.Results;
 using System;
 using System.Collections.Generic;
@@ -13,4 +14,5 @@ public interface IObjectiveRepository
     ObjectiveResult Update(Objective objective);
     Guid Delete(Objective objective);
     IEnumerable<ObjectiveResult> Process(Guid userId);
+    IEnumerable<ObjectiveResult> Reorder(Guid userId, IEnumerable<ObjectiveOrder> objectiveOrders);
 }

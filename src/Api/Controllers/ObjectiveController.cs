@@ -104,4 +104,20 @@ public class ObjectiveController : Controller
         var commandResult = await _mediator.Send(command);
         return Response(commandResult);
     }
+
+    /// <summary>
+    /// Método que atualiza a ordem dos objetivos
+    /// </summary>
+    /// <param name="userId">Id do usuário</param>
+    /// <param name="command">Informações da nova ordem dos objetivos</param>
+    /// <returns>Objetivo</returns>
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResult))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpPut("v1/users/{userId:guid}/objectives/reorder")]
+    public async Task<IActionResult> PutObjectivesOrder(Guid userId, [FromBody] ReorderObjectivesCommand command)
+    {
+        command.UserId = userId;
+        var commandResult = await _mediator.Send(command);
+        return Response(commandResult);
+    }
 }

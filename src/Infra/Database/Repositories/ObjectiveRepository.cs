@@ -1,4 +1,5 @@
-﻿using Core.Divdados.Domain.UserContext.Entities;
+﻿using Core.Divdados.Domain.UserContext.Commands.Inputs;
+using Core.Divdados.Domain.UserContext.Entities;
 using Core.Divdados.Domain.UserContext.Repositories;
 using Core.Divdados.Domain.UserContext.Results;
 using Core.Divdados.Infra.SQL.DataContext;
@@ -90,9 +91,40 @@ public class ObjectiveRepository : IObjectiveRepository
         return objectivesToUpdateStatus.Select(x => ObjectiveResult.Create(x, 0.0M));
     }
 
+    public IEnumerable<ObjectiveResult> Reorder(Guid userId, IEnumerable<ObjectiveOrder> objectivesOrder)
+    {
+        var objectives = new List<Objective>();
+        var maxOrder = -1;
+        foreach (var objectiveOrder in objectivesOrder)
+        {
+            var objective = GetObjective(objectiveOrder.Id, userId);
+            objective.UpdateOrder(objectiveOrder.Order);
+            if (maxOrder < objectiveOrder.Order) maxOrder = objectiveOrder.Order;
+            objectives.Add(objective);
+        }
+
+        var objectivesNotUpdated = GetObjectivesNotInRangeQuery(userId, objectivesOrder.Select(x => x.Id));
+        foreach (var objective in objectivesNotUpdated)
+        {
+            maxOrder++;
+            objective.UpdateOrder(maxOrder);
+            objectives.Add(objective);
+        }
+
+        _context.Objectives.UpdateRange(objectives);
+        return objectives.Select(x => ObjectiveResult.Create(x, 0.0M));
+    }
+
     private IQueryable<Objective> GetObjectivesQuery(Guid userId) =>
         from objective in _context.Objectives
         where objective.UserId.Equals(userId)
+        orderby objective.Order
+        select objective;
+
+    private IQueryable<Objective> GetObjectivesNotInRangeQuery(Guid userId, IEnumerable<Guid> objectiveIds) =>
+        from objective in _context.Objectives
+        where objective.UserId.Equals(userId) && 
+              !objectiveIds.Contains(objective.Id)
         orderby objective.Order
         select objective;
 
