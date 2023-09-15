@@ -71,7 +71,6 @@ public class OperationController : Controller
     /// </summary>
     /// <param name="id">Id da operação</param>
     /// <param name="userId">Id do usuário</param>
-    /// <param name="command">Informações da operação</param>
     /// <returns>Id da operação</returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Guid))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

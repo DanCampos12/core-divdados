@@ -65,4 +65,24 @@ public class ObjectiveController : Controller
         var commandResult = await _mediator.Send(command);
         return Response(commandResult);
     }
+
+    /// <summary>
+    /// Método que remove um objetivo
+    /// </summary>
+    /// <param name="id">Id do objetivo</param>
+    /// <param name="userId">Id do usuário</param>
+    /// <returns>Id do objetivo</returns>
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Guid))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpDelete("v1/users/{userId:guid}/objectives/{id:guid}")]
+    public async Task<IActionResult> DeleteOperation(Guid id, Guid userId)
+    {
+        var command = new DeleteObjectiveCommand
+        {
+            Id = id,
+            UserId = userId
+        };
+        var commandResult = await _mediator.Send(command);
+        return Response(commandResult);
+    }
 }

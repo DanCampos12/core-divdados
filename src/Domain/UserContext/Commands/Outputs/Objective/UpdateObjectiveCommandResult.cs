@@ -5,5 +5,5 @@ namespace Core.Divdados.Domain.UserContext.Commands.Outputs;
 
 public class UpdateObjectiveCommandResult : CommandResult
 {
-    public ObjectiveResult ObjectiveResult { get; set; }
+    public ObjectiveResult Objective { get; set; }
 }

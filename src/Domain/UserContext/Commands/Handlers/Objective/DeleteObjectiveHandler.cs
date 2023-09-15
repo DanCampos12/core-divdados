@@ -11,14 +11,14 @@ using System.Threading.Tasks;
 
 namespace Core.Divdados.Domain.UserContext.Commands.Handlers;
 
-public sealed class UpdateObjectiveHandler : Handler<UpdateObjectiveCommand, UpdateObjectiveCommandResult>
+public sealed class DeleteObjectiveHandler : Handler<DeleteObjectiveCommand, DeleteObjectiveCommandResult>
 {
     private readonly IObjectiveRepository _objectiveRepository;
     private readonly IUserRepository _userRepository;
     private readonly IUow _uow;
-    private readonly UpdateObjectiveCommandResult _commandResult;
+    private readonly DeleteCategoryCommandResult _commandResult;
 
-    public UpdateObjectiveHandler(
+    public DeleteObjectiveHandler(
         IObjectiveRepository objectiveRepository,
         IUserRepository userRepository,
         IUow uow)
@@ -29,7 +29,7 @@ public sealed class UpdateObjectiveHandler : Handler<UpdateObjectiveCommand, Upd
         _commandResult = new();
     }
 
-    public override Task<UpdateObjectiveCommandResult> Handle(UpdateObjectiveCommand command, CancellationToken ct)
+    public override Task<DeleteObjectiveCommandResult> Handle(DeleteObjectiveCommand command, CancellationToken ct)
     {
         if (!command.Validate())
         {
@@ -40,21 +40,20 @@ public sealed class UpdateObjectiveHandler : Handler<UpdateObjectiveCommand, Upd
         Validate(command.UserId);
         if (Invalid) return Incomplete();
 
-        var objective = _objectiveRepository.GetObjective(command.Id, command.UserId);
-        if (objective is null)
+        var operation = _objectiveRepository.GetObjective(command.Id, command.UserId);
+        if (operation is null)
         {
-            AddNotification(nameof(command.Id), $"Objetivo não encontrado");
+            AddNotification(nameof(command.Id), $"Operação não encontrada");
             return Incomplete();
         }
 
-        objective.Update(command.Value, command.Description);
-        AddNotifications(objective);
+        AddNotifications(operation);
         if (Invalid) return Incomplete();
 
-        _commandResult.Objective = _objectiveRepository.Update(objective);
+        _commandResult.Id = _objectiveRepository.Delete(operation);
         _uow.Commit();
 
-        return Complete(_commandResult.Objective);
+        return Complete(_commandResult.Id);
     }
 
     private void Validate(Guid userId)

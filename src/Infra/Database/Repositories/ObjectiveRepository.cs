@@ -25,7 +25,7 @@ public class ObjectiveRepository : IObjectiveRepository
     {
         var objectivesResult = new List<ObjectiveResult>();
         var objectives = GetObjectivesQuery(userId);
-        var totalValue = GetTotalValue(userId);
+        var totalValue = GetUserOperationsTotalValue(userId);
         if (totalValue < 0) totalValue = 0;
 
         foreach (var objective in objectives)
@@ -60,7 +60,19 @@ public class ObjectiveRepository : IObjectiveRepository
 
     public Guid Delete(Objective objective)
     {
+        var objectivesToUpdateOrder = _context.Objectives
+            .Where(x => x.UserId.Equals(objective.UserId) && x.Order > objective.Order)
+            .OrderBy(x => x.Order);
+
+        var index = 0;
+        foreach (var objectiveToUpdateOrder in objectivesToUpdateOrder)
+        {
+            objectiveToUpdateOrder.UpdateOrder(objective.Order + index);
+            index++;
+        }
+
         _context.Objectives.Remove(objective);
+        _context.Objectives.UpdateRange(objectivesToUpdateOrder);
         return objective.Id;
     }
 
@@ -70,7 +82,7 @@ public class ObjectiveRepository : IObjectiveRepository
         orderby objective.Order
         select objective;
 
-    private decimal GetTotalValue(Guid userId) => _context.Operations
+    private decimal GetUserOperationsTotalValue(Guid userId) => _context.Operations
         .Where(operation => operation.UserId.Equals(userId))
         .Sum(operation => operation.Type.ToString().Equals("I") ? operation.Value : (operation.Value * -1));
 }

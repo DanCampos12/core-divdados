@@ -54,4 +54,10 @@ public sealed class Objective : Entity
         Description = description;
         AddNotifications(this);
     }
+
+    public void UpdateOrder(int order)
+    {
+        Order = order;
+        AddNotifications(this);
+    }
 }
