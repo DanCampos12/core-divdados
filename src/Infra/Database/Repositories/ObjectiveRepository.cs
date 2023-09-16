@@ -94,21 +94,21 @@ public class ObjectiveRepository : IObjectiveRepository
     public IEnumerable<ObjectiveResult> Reorder(Guid userId, IEnumerable<ObjectiveOrder> objectivesOrder)
     {
         var objectives = new List<Objective>();
-        var maxOrder = -1;
-        foreach (var objectiveOrder in objectivesOrder)
+        var order = 0;
+        foreach (var objectiveOrder in objectivesOrder.OrderBy(x => x.Order))
         {
             var objective = GetObjective(objectiveOrder.Id, userId);
-            objective.UpdateOrder(objectiveOrder.Order);
-            if (maxOrder < objectiveOrder.Order) maxOrder = objectiveOrder.Order;
+            objective.UpdateOrder(order);
             objectives.Add(objective);
+            order++;
         }
 
         var objectivesNotUpdated = GetObjectivesNotInRangeQuery(userId, objectivesOrder.Select(x => x.Id));
         foreach (var objective in objectivesNotUpdated)
         {
-            maxOrder++;
-            objective.UpdateOrder(maxOrder);
+            objective.UpdateOrder(order);
             objectives.Add(objective);
+            order++;
         }
 
         _context.Objectives.UpdateRange(objectives);

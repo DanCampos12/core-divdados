@@ -1,10 +1,8 @@
 ﻿using Core.Divdados.Domain.UserContext.Entities;
 using Core.Divdados.Domain.UserContext.Services;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using System;
-using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -29,8 +27,7 @@ public class AuthorizationMiddleware
         var headerClientId = context.Request.Headers["x-client-id"].ToString();
         var headerAuthorization = context.Request.Headers["authorization"].ToString();
         var httpMethod = context.Request.Method.ToString();
-        var httpPath = context.Request.Path.ToString();
-        var httpRoute = context.Request.Path.Value;
+        var httpPathValue = context.Request.Path.Value;
         var registerPaths = new string[] { "/v1/users", "/v1/users/auth/sign-in" };
         Guid? userId = null;
 
@@ -48,13 +45,13 @@ public class AuthorizationMiddleware
             return;
         }
 
-        if (registerPaths.Contains(httpPath.ToString()) && httpMethod.Equals("POST"))
+        if (registerPaths.Contains(httpPathValue.ToString()) && httpMethod.Equals("POST"))
         {
             await _requestDelegate(context);
             return;
         }
 
-        if (Guid.TryParse(httpRoute.Split("/")[3], out var userIdParsed))
+        if (Guid.TryParse(httpPathValue.Split("/")[3], out var userIdParsed))
             userId = userIdParsed;
 
         if (!_authService.ValidateToken(headerAuthorization.Replace("Bearer ", ""), userId))
