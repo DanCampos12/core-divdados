@@ -1,9 +1,8 @@
 ﻿using Core.Divdados.Domain.UserContext.Commands.Inputs;
-using Core.Divdados.Domain.UserContext.Results;
+using Core.Divdados.Domain.UserContext.Commands.Outputs;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Threading.Tasks;
 
 namespace Core.Divdados.Api.Controllers;
@@ -22,7 +21,7 @@ public class AuthController : Controller
     /// </summary>
     /// <param name="command">Informações do usuário</param>
     /// <returns>Usuário e Token</returns>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResult))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SignInCommandResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpPost("v1/users/auth/sign-in")]
     public async Task<IActionResult> SignIn([FromBody] SignInCommand command)
@@ -36,7 +35,7 @@ public class AuthController : Controller
     /// </summary>
     /// <param name="command">Informações do usuário</param>
     /// <returns>Usuário e Token</returns>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResult))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RefreshTokenCommandResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpPost("v1/users/auth/refresh-token")]
     public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenCommand command)

@@ -54,8 +54,9 @@ public sealed class SignInHandler : Handler<SignInCommand, SignInCommandResult>
             return Incomplete();
         }
 
+        var userPreference = _userRepository.GetPreference(user.Id);
         var userIdToken = _authService.GenerateToken(user);
-        _commandResult.User = UserResult.Create(user);
+        _commandResult.User = UserResult.Create(user, userPreference);
         _commandResult.IdToken = userIdToken;
         return Complete(new { _commandResult.User, _commandResult.IdToken });
     }

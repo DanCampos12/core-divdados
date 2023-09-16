@@ -2,6 +2,8 @@
 using Core.Divdados.Domain.UserContext.Repositories;
 using Core.Divdados.Domain.UserContext.Results;
 using Core.Divdados.Infra.SQL.DataContext;
+using Core.Divdados.Infra.SQL.Transactions;
+using Core.Divdados.Shared.Uow;
 using System;
 using System.Linq;
 
@@ -10,8 +12,13 @@ namespace Core.Divdados.Infra.SQL.Repositories;
 public class UserRepository : IUserRepository
 {
     public UserDataContext _context;
+    private IUow _uow;
 
-    public UserRepository(UserDataContext context) => _context = context;
+    public UserRepository(UserDataContext context, IUow uow)
+    {
+        _context = context;
+        _uow = uow;
+    }
 
     public User Get(Guid id) => _context.Users
         .Where(user => user.Id.Equals(id))
@@ -21,35 +28,27 @@ public class UserRepository : IUserRepository
         .Where(user => user.Email.Equals(email))
         .FirstOrDefault();
 
-    public UserResult GetUserResult(Guid id) =>
-        GetUserResultQuery(id).FirstOrDefault();
-
-
     public UserResult Add(User user) {
         _context.Users.Add(user);
-        return UserResult.Create(user);
+        _uow.Commit();
+
+        var preference = new Preference(user.Id);
+        _context.Preferences.Add(preference);
+        return UserResult.Create(user, preference);
     }
 
     public UserResult Update(User user) {
+        var preference = GetPreference(user.Id);
         _context.Users.Update(user);
-        return UserResult.Create(user);
+        return UserResult.Create(user, preference);
     }
 
-    public Guid Delete(User user)
+    public UserResult UpdatePreference(User user, Preference preference)
     {
-        _context.Users.Remove(user);
-        return user.Id;
-    }
+        _context.Preferences.Update(preference);
+        return UserResult.Create(user, preference);
+    } 
 
-    private IQueryable<UserResult> GetUserResultQuery(Guid id) =>
-        from user in _context.Users
-        where user.Id.Equals(id)
-        select new UserResult
-        {
-            Id = user.Id,
-            Name = user.Name,
-            Email = user.Email,
-            BirthDate = user.BirthDate,
-            Sex = user.Sex
-        };
+    public Preference GetPreference(Guid userId) =>
+        _context.Preferences.FirstOrDefault(x => x.UserId.Equals(userId));
 }

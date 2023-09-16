@@ -8,8 +8,8 @@ public interface IUserRepository
 {
     User Get(Guid id);
     User GetByEmail(string email);
-    UserResult GetUserResult(Guid id);
+    Preference GetPreference(Guid userId);
     UserResult Add(User user);
     UserResult Update(User user);
-    Guid Delete(User user);
+    public UserResult UpdatePreference(User user, Preference preference);
 }

@@ -1,4 +1,5 @@
 ﻿using Core.Divdados.Domain.UserContext.Commands.Inputs;
+using Core.Divdados.Domain.UserContext.Commands.Outputs;
 using Core.Divdados.Domain.UserContext.Repositories;
 using Core.Divdados.Domain.UserContext.Results;
 using MediatR;
@@ -26,7 +27,7 @@ public class EventController : Controller
     /// </summary>
     /// <param name="userId">Id do usuário</param>
     /// <returns>Eventos</returns>
-    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(UserResult))]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(EventResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpGet("v1/users/{userId:guid}/events")]
     public IActionResult GetOperations(Guid userId) =>
@@ -38,7 +39,7 @@ public class EventController : Controller
     /// <param name="userId">Id do usuário</param>
     /// <param name="command">Informações do Evento</param>
     /// <returns>Evento</returns>
-    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(UserResult))]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(CreateEventCommandResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpPost("v1/users/{userId:guid}/events")]
     public async Task<IActionResult> PostEvent(Guid userId, [FromBody] CreateEventCommand command)
@@ -55,7 +56,7 @@ public class EventController : Controller
     /// <param name="userId">Id do usuário</param>
     /// <param name="command">Informações do evento</param>
     /// <returns>Evento</returns>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResult))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UpdateEventCommandResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpPut("v1/users/{userId:guid}/events/{id:guid}")]
     public async Task<IActionResult> PutEvent(Guid id, Guid userId, [FromBody] UpdateEventCommand command)

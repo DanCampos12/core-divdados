@@ -1,4 +1,5 @@
 ﻿using Core.Divdados.Domain.UserContext.Commands.Inputs;
+using Core.Divdados.Domain.UserContext.Commands.Outputs;
 using Core.Divdados.Domain.UserContext.Repositories;
 using Core.Divdados.Domain.UserContext.Results;
 using MediatR;
@@ -26,7 +27,7 @@ public class OperationController : Controller
     /// </summary>
     /// <param name="userId">Id do usuário</param>
     /// <returns>Operações</returns>
-    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(UserResult))]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(OperationResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpGet("v1/users/{userId:guid}/operations")]
     public IActionResult GetOperations(Guid userId) =>
@@ -38,7 +39,7 @@ public class OperationController : Controller
     /// <param name="userId">Id do usuário</param>
     /// <param name="command">Informações da operação</param>
     /// <returns>Operação</returns>
-    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(UserResult))]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(CreateOperationCommandResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpPost("v1/users/{userId:guid}/operations")]
     public async Task<IActionResult> PostOperation(Guid userId, [FromBody] CreateOperationCommand command)
@@ -55,7 +56,7 @@ public class OperationController : Controller
     /// <param name="userId">Id do usuário</param>
     /// <param name="command">Informações da operação</param>
     /// <returns>Categoria</returns>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResult))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UpdateOperationCommandResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpPut("v1/users/{userId:guid}/operations/{id:guid}")]
     public async Task<IActionResult> PutOperation(Guid id, Guid userId, [FromBody] UpdateOperationCommand command)
@@ -92,7 +93,7 @@ public class OperationController : Controller
     /// <param name="id">Id da operação</param>
     /// <param name="userId">Id do usuário</param>
     /// <returns>Categoria</returns>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResult))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(EffectOperationCommandResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpPut("v1/users/{userId:guid}/operations/{id:guid}/effect")]
     public async Task<IActionResult> EffectOperation(Guid id, Guid userId)

@@ -1,4 +1,5 @@
 ﻿using Core.Divdados.Domain.UserContext.Commands.Inputs;
+using Core.Divdados.Domain.UserContext.Commands.Outputs;
 using Core.Divdados.Domain.UserContext.Repositories;
 using Core.Divdados.Domain.UserContext.Results;
 using MediatR;
@@ -26,7 +27,7 @@ public class CategoryController : Controller
     /// </summary>
     /// <param name="userId">Id do usuário</param>
     /// <returns>Categorias</returns>
-    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(UserResult))]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(CategoryResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpGet("v1/users/{userId:guid}/categories")]
     public IActionResult GetCategories(Guid userId) =>
@@ -38,7 +39,7 @@ public class CategoryController : Controller
     /// <param name="userId">Id do usuário</param>
     /// <param name="command">Informações da categoria</param>
     /// <returns>Categoria</returns>
-    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(UserResult))]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(CreateCategoryCommandResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpPost("v1/users/{userId:guid}/categories")]
     public async Task<IActionResult> PostCategory(Guid userId, [FromBody] CreateCategoryCommand command)
@@ -55,7 +56,7 @@ public class CategoryController : Controller
     /// <param name="userId">Id do usuário</param>
     /// <param name="command">Informações da categoria</param>
     /// <returns>Categoria</returns>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResult))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UpdateCategoryCommandResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpPut("v1/users/{userId:guid}/categories/{id:guid}")]
     public async Task<IActionResult> PutCategory(Guid id, Guid userId, [FromBody] UpdateCategoryCommand command)
@@ -71,7 +72,6 @@ public class CategoryController : Controller
     /// </summary>
     /// <param name="id">Id da categoria</param>
     /// <param name="userId">Id do usuário</param>
-    /// <param name="command">Informações da categoria</param>
     /// <returns>Id da categoria</returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Guid))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

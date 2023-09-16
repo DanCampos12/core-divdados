@@ -1,4 +1,5 @@
 ﻿using Core.Divdados.Domain.UserContext.Commands.Inputs;
+using Core.Divdados.Domain.UserContext.Commands.Outputs;
 using Core.Divdados.Domain.UserContext.Repositories;
 using Core.Divdados.Domain.UserContext.Results;
 using MediatR;
@@ -26,7 +27,7 @@ public class ObjectiveController : Controller
     /// </summary>
     /// <param name="userId">Id do usuário</param>
     /// <returns>Objetivos</returns>
-    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ObjectResult))]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ObjectiveResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpGet("v1/users/{userId:guid}/objectives")]
     public IActionResult GetObjectives(Guid userId) =>
@@ -38,7 +39,7 @@ public class ObjectiveController : Controller
     /// <param name="userId">Id do usuário</param>
     /// <param name="command">Informações do objetivo</param>
     /// <returns>Objetivo</returns>
-    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ObjectResult))]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(CreateObjectiveCommandResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpPost("v1/users/{userId:guid}/objectives")]
     public async Task<IActionResult> PostObjective(Guid userId, [FromBody] CreateObjectiveCommand command)
@@ -55,7 +56,7 @@ public class ObjectiveController : Controller
     /// <param name="userId">Id do usuário</param>
     /// <param name="command">Informações do objetivo</param>
     /// <returns>Objetivo</returns>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResult))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UpdateObjectiveCommandResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpPut("v1/users/{userId:guid}/objectives/{id:guid}")]
     public async Task<IActionResult> PutObjective(Guid id, Guid userId, [FromBody] UpdateObjectiveCommand command)
@@ -92,7 +93,7 @@ public class ObjectiveController : Controller
     /// <param name="userId">Id do usuário</param>
     /// <param name="command">Informações do objetivo</param>
     /// <returns>Objetivos processados</returns>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ObjectiveResult))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProcessObjectivesCommandResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpPost("v1/users/{userId:guid}/objectives/process")]
     public async Task<IActionResult> ProcessObjectives(Guid userId)
@@ -111,7 +112,7 @@ public class ObjectiveController : Controller
     /// <param name="userId">Id do usuário</param>
     /// <param name="command">Informações da nova ordem dos objetivos</param>
     /// <returns>Objetivo</returns>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResult))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ReorderObjectivesCommandResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpPut("v1/users/{userId:guid}/objectives/reorder")]
     public async Task<IActionResult> PutObjectivesOrder(Guid userId, [FromBody] ReorderObjectivesCommand command)
@@ -128,7 +129,7 @@ public class ObjectiveController : Controller
     /// <param name="userId">Id do usuário</param>
     /// <param name="command">Informações do objetivo</param>
     /// <returns>Objetivo</returns>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResult))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompleteObjectiveCommandResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpPut("v1/users/{userId:guid}/objectives/{id:guid}/complete")]
     public async Task<IActionResult> CompleteObjective(Guid id, Guid userId)

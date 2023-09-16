@@ -7,13 +7,14 @@ public class UserResult
 {
     public UserResult() { }
 
-    private UserResult(User user)
+    private UserResult(User user, Preference preference)
     {
         Id = user.Id;
         Name = user.Name;
         BirthDate = user.BirthDate;
         Email = user.Email;
         Sex = user.Sex;
+        Preference = PreferenceResult.Create(preference);
     }
 
     public Guid Id { get; set; }
@@ -21,6 +22,7 @@ public class UserResult
     public string Email { get; set; }
     public DateTime BirthDate { get; set; }
     public char Sex { get; set; }
+    public PreferenceResult Preference { get; set; }
 
-    public static UserResult Create(User user) => new(user);
+    public static UserResult Create(User user, Preference preference) => new(user, preference);
 }

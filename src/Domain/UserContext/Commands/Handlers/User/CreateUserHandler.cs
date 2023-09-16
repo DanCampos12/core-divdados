@@ -55,6 +55,6 @@ public sealed class CreateUserHandler : Handler<CreateUserCommand, CreateUserCom
         AddNotifications(new Contract()
             .Requires()
             .IsTrue(_userRepository.GetByEmail(user.Email) is null,
-                     nameof(User), $"Email ({user.Email}) já cadastrado na base"));
+                     nameof(User), $"Email ({user.Email}) já cadastrado"));
     }
 }

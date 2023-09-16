@@ -11,6 +11,7 @@ public class UserDataContext : DbContext
     #region DbSets
 
     public virtual DbSet<User> Users { get; set; }
+    public virtual DbSet<Preference> Preferences { get; set; }
     public virtual DbSet<Category> Categories { get; set; }
     public virtual DbSet<Event> Events { get; set; }
     public virtual DbSet<Operation> Operations { get; set; }
