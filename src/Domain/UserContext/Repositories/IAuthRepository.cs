@@ -6,5 +6,4 @@ namespace Core.Divdados.Domain.UserContext.Repositories;
 public interface IAuthRepository
 {
     public Guid UpdatePassword(User user, string password);
-    public Guid UpdateToken(User user, string idToken);
 }

@@ -48,19 +48,4 @@ public class AuthController : Controller
 
         return Response(commandResult);
     }
-
-    /// <summary>
-    /// Método que invalida as autenticações do usuário
-    /// </summary>
-    /// <param name="id">Id do usuário</param>
-    /// <returns>Id do usuário</returns>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Guid))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [HttpPost("v1/users/{id:guid}/auth/sign-out")]
-    public async Task<IActionResult> SignOut(Guid id)
-    {
-        var command = new SignOutCommand() { Id = id };
-        var commandResult = await _mediator.Send(command);
-        return Response(commandResult);
-    }
 }

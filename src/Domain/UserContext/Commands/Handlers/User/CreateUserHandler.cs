@@ -34,10 +34,9 @@ public sealed class CreateUserHandler : Handler<CreateUserCommand, CreateUserCom
 
         var user = new User(
             name: command.Name,
-            surname: command.Surname,
             email: command.Email,
             password: AuthService.EncryptPassword(command.Password),
-            age: command.Age,
+            birthDate: command.BirthDate,
             sex: command.Sex);
         AddNotifications(user);
         if (Invalid) return Incomplete();
@@ -55,7 +54,7 @@ public sealed class CreateUserHandler : Handler<CreateUserCommand, CreateUserCom
     {
         AddNotifications(new Contract()
             .Requires()
-            .IsFalse(_userRepository.GetByEmail(user.Email) is not null,
+            .IsTrue(_userRepository.GetByEmail(user.Email) is null,
                      nameof(User), $"Email ({user.Email}) já cadastrado na base"));
     }
 }

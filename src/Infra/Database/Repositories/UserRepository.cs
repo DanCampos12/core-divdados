@@ -48,9 +48,8 @@ public class UserRepository : IUserRepository
         {
             Id = user.Id,
             Name = user.Name,
-            Surname = user.Surname,
             Email = user.Email,
-            Age = user.Age,
+            BirthDate = user.BirthDate,
             Sex = user.Sex
         };
 }

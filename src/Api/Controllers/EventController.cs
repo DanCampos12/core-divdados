@@ -33,7 +33,7 @@ public class EventController : Controller
         Ok(_eventRepository.GetEvents(userId));
 
     /// <summary>
-    /// Método que adiciona um Evento
+    /// Método que adiciona um evento
     /// </summary>
     /// <param name="userId">Id do usuário</param>
     /// <param name="command">Informações do Evento</param>

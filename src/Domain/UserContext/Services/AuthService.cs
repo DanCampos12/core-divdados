@@ -26,13 +26,13 @@ public sealed class AuthService
         {
             new Claim("userId", user.Id.ToString()),
             new Claim("userEmail", user.Email),
-            new Claim("userName", $"{user.Name} {user.Surname}")
+            new Claim("userName", user.Name)
         };
         var token = tokenHandler.CreateToken(new SecurityTokenDescriptor()
         {
             Issuer = _jwtBearer.ValidIssuer,
             Audience = _jwtBearer.ValidAudience,
-            Expires = DateTime.UtcNow.AddHours(1),
+            Expires = DateTime.UtcNow.AddDays(3),
             Subject = new ClaimsIdentity(userCustomClaims),
             SigningCredentials = new SigningCredentials(
                 new SymmetricSecurityKey(key), 

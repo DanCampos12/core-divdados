@@ -44,20 +44,17 @@ public sealed class SignInHandler : Handler<SignInCommand, SignInCommandResult>
         var user = _userRepository.GetByEmail(command.Email);
         if (user is null)
         {
-            AddNotification(nameof(User), $"O email informado ({command.Email}) não corresponde a nenhum usuário");
+            AddNotification(nameof(User), "Email ou senha não correspondem");
             return Incomplete();
         }
 
         if (!AuthService.ValidatePassword(command.Password, user.Password))
         {
-            AddNotification(nameof(User), "Senha inválida");
+            AddNotification(nameof(User), "Email ou senha não correspondem");
             return Incomplete();
         }
 
         var userIdToken = _authService.GenerateToken(user);
-        _authRepository.UpdateToken(user, userIdToken);
-        _uow.Commit();
-
         _commandResult.User = UserResult.Create(user);
         _commandResult.IdToken = userIdToken;
         return Complete(new { _commandResult.User, _commandResult.IdToken });

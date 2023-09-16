@@ -1,8 +1,10 @@
 ﻿using Core.Divdados.Domain.UserContext.Entities;
 using Core.Divdados.Domain.UserContext.Services;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -28,10 +30,9 @@ public class AuthorizationMiddleware
         var headerAuthorization = context.Request.Headers["authorization"].ToString();
         var httpMethod = context.Request.Method.ToString();
         var httpPath = context.Request.Path.ToString();
-        var registerPaths = new string[] { 
-            "/v1/users", 
-            "/v1/users/auth/sign-in", 
-            "/v1/users/auth/refresh-token" };
+        var httpRoute = context.Request.Path.Value;
+        var registerPaths = new string[] { "/v1/users", "/v1/users/auth/sign-in" };
+        Guid? userId = null;
 
         if (httpMethod.Equals("OPTIONS"))
         {
@@ -53,7 +54,10 @@ public class AuthorizationMiddleware
             return;
         }
 
-        if (!_authService.ValidateToken(headerAuthorization.Replace("Bearer ", "")))
+        if (Guid.TryParse(httpRoute.Split("/")[3], out var userIdParsed))
+            userId = userIdParsed;
+
+        if (!_authService.ValidateToken(headerAuthorization.Replace("Bearer ", ""), userId))
         {
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             await context.Response.WriteAsync("Token inválido");

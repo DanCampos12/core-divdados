@@ -49,18 +49,13 @@ public sealed class RefreshTokenHandler : Handler<RefreshTokenCommand, RefreshTo
         }
 
         var isValidToken = _authService.ValidateToken(command.IdToken, command.Id);
-        var isLastUserToken = command.IdToken.Equals(user.LastSessionTokenId);
-        if (!isValidToken && !isLastUserToken)
+        if (!isValidToken)
         {
             AddNotification(nameof(User), "Não foi possível autenticar o usuário");
-            _authRepository.UpdateToken(user, null);
-            _uow.Commit();
             return Incomplete();
         }
 
         var userIdToken = _authService.GenerateToken(user);
-        _authRepository.UpdateToken(user, userIdToken);
-        _uow.Commit();
         _commandResult.User = UserResult.Create(user);
         _commandResult.IdToken = userIdToken;
 

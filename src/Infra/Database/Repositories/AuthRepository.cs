@@ -18,11 +18,4 @@ public class AuthRepository : IAuthRepository
         _context.Users.Update(user);
         return user.Id;
     }
-
-    public Guid UpdateToken(User user, string idToken)
-    {
-        user.UpdateToken(idToken);
-        _context.Users.Update(user);
-        return user.Id;
-    }
 }
