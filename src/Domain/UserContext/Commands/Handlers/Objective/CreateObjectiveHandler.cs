@@ -1,5 +1,6 @@
 ﻿using Core.Divdados.Domain.UserContext.Commands.Inputs;
 using Core.Divdados.Domain.UserContext.Commands.Outputs;
+using Core.Divdados.Domain.UserContext.Constants;
 using Core.Divdados.Domain.UserContext.Entities;
 using Core.Divdados.Domain.UserContext.Repositories;
 using Core.Divdados.Shared.Commands;
@@ -46,7 +47,7 @@ public sealed class CreateObjectiveHandler : Handler<CreateObjectiveCommand, Cre
             description: command.Description,
             initialDate: DateTime.Today,
             finalDate: command.FinalDate,
-            status: "inProgress",
+            status: ObjectiveStatus.IN_PROGRESS,
             order: _objectiveRepository.GetObjectives(command.UserId).Count(),
             userId: command.UserId);
         

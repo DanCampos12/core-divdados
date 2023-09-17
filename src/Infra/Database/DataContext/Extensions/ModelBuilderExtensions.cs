@@ -25,6 +25,6 @@ public static class ModelBuilderExtensions
             .ForEach(property =>
             {
                 if (property.ClrType == typeof(DateTime) || property.ClrType == typeof(DateTime?))
-                    property.SetColumnType("date");
+                    property.SetColumnType("timestamp");
             });
 }

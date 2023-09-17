@@ -1,4 +1,5 @@
 ﻿using Core.Divdados.Domain.UserContext.Commands.Inputs;
+using Core.Divdados.Domain.UserContext.Constants;
 using Core.Divdados.Domain.UserContext.Entities;
 using Core.Divdados.Domain.UserContext.Repositories;
 using Core.Divdados.Domain.UserContext.Results;
@@ -28,7 +29,7 @@ public class ObjectiveRepository : IObjectiveRepository
 
         foreach (var objective in objectives)
         {
-            if (objective.Status.Equals("inProgress"))
+            if (objective.Status.Equals(ObjectiveStatus.IN_PROGRESS))
             {
                 var progress = (totalValue / objective.Value);
                 if (progress > 1) progress = 1.0M;
@@ -77,17 +78,23 @@ public class ObjectiveRepository : IObjectiveRepository
     public IEnumerable<ObjectiveResult> Process(Guid userId)
     {
         var objectivesToUpdateStatus = _context.Objectives
-            .Where(x => x.UserId.Equals(userId) && x.FinalDate < DateTime.Today);
+            .Where(x => x.UserId.Equals(userId) && 
+                        x.FinalDate < DateTime.Today &&
+                        x.Status.Equals(ObjectiveStatus.IN_PROGRESS))
+            .ToArray();
 
         foreach (var objectiveToUpdateStatus in objectivesToUpdateStatus)
-            objectiveToUpdateStatus.UpdateStatus("expired");
+            objectiveToUpdateStatus.UpdateStatus(ObjectiveStatus.EXPIRED);
 
-        _context.Objectives.UpdateRange(objectivesToUpdateStatus);
-        _context.Notifications.AddRange(objectivesToUpdateStatus.Select(x => new Notification(
+        var notifications = objectivesToUpdateStatus.Select(x => new Notification(
             $"O objetivo {x.Description} com data término em {x.FinalDate:dd/MM/yyyy} expirou!",
+            NotificationTypes.OBJECTIVE_EXPIRED,
             false,
-            x.UserId)));
-
+            x.UserId));
+        
+        _context.Objectives.UpdateRange(objectivesToUpdateStatus);
+        _context.Notifications.AddRange(notifications);
+        Console.WriteLine(notifications);
         return objectivesToUpdateStatus.Select(x => ObjectiveResult.Create(x, 0.0M));
     }
 

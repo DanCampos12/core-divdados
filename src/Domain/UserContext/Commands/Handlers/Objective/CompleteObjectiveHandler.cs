@@ -1,5 +1,6 @@
 ﻿using Core.Divdados.Domain.UserContext.Commands.Inputs;
 using Core.Divdados.Domain.UserContext.Commands.Outputs;
+using Core.Divdados.Domain.UserContext.Constants;
 using Core.Divdados.Domain.UserContext.Entities;
 using Core.Divdados.Domain.UserContext.Repositories;
 using Core.Divdados.Shared.Commands;
@@ -47,7 +48,7 @@ public sealed class CompleteObjectiveHandler : Handler<CompleteObjectiveCommand,
             return Incomplete();
         }
 
-        if (objective.Status.Equals("expired"))
+        if (objective.Status.Equals(ObjectiveStatus.EXPIRED))
         {
             AddNotification(nameof(Objective), $"Não é possível completar um objetivo que já foi expirado");
             return Incomplete();
