@@ -7,7 +7,7 @@ public class EventResult
 {
     public EventResult() { }
 
-    private EventResult(Event @event)
+    private EventResult(Event @event, Category category, bool completed)
     {
         Id = @event.Id;
         Value = @event.Value;
@@ -15,9 +15,11 @@ public class EventResult
         Description = @event.Description;
         InitialDate = @event.InitialDate;
         FinalDate = @event.FinalDate;
-        Period = @event.Period;
+        Period = @event.Period.Trim();
         UserId = @event.UserId;
-        CategoryId = @event.CategoryId;
+        CategoryId = category.Id;
+        CategoryName = category.Name;
+        Completed = completed;
     }
 
     public Guid Id { get; set; }
@@ -29,6 +31,8 @@ public class EventResult
     public string Period { get; set; }
     public Guid UserId { get; set; }
     public Guid CategoryId { get; set; }
+    public string CategoryName { get; set; }
+    public bool Completed { get; set; }
 
-    public static EventResult Create(Event @event) => new(@event);
+    public static EventResult Create(Event @event, Category category, bool completed) => new(@event, category, completed);
 }

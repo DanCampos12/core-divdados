@@ -54,6 +54,12 @@ public sealed class ChangePasswordHandler : Handler<ChangePasswordCommand, Chang
             return Incomplete();
         }
 
+        if (AuthService.ValidatePassword(command.NewPassword, user.Password))
+        {
+            AddNotification(nameof(command.Password), $"A nova senha deve ser diferente da senha atual");
+            return Incomplete();
+        }
+
         user.UpdatePassword(AuthService.EncryptPassword(command.NewPassword));
         _commandResult.User = _userRepository.Update(user);
         _commandResult.IdToken = _authService.GenerateToken(user);

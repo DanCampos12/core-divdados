@@ -29,6 +29,7 @@ public class EventRepository : IEventRepository
         GetEventsQuery(userId).ToArray();
 
     public EventResult Add(Event @event) {
+        var category = _context.Categories.FirstOrDefault(x => x.Id.Equals(@event.CategoryId));
         var operationsDate = GetOperationDates(@event.InitialDate, @event.FinalDate, @event.Period);
         var operationsToInsert = new List<Operation>();
 
@@ -47,10 +48,11 @@ public class EventRepository : IEventRepository
 
         _context.Events.Add(@event);
         _context.Operations.AddRange(operationsToInsert);
-        return EventResult.Create(@event);
+        return EventResult.Create(@event, category, !operationsToInsert.Any(operation => !operation.Effected));
     }
 
     public EventResult Update(Event @event) {
+        var category = _context.Categories.FirstOrDefault(x => x.Id.Equals(@event.CategoryId));
         var operationsToUpdate = _context.Operations.Where(x => x.EventId.Equals(@event.Id));
 
         foreach (var operation in operationsToUpdate)
@@ -58,7 +60,7 @@ public class EventRepository : IEventRepository
 
         _context.Events.Update(@event);
         _context.Operations.UpdateRange(operationsToUpdate);
-        return EventResult.Create(@event);
+        return EventResult.Create(@event, category, !operationsToUpdate.Any(operation => !operation.Effected));
     }
 
     public Guid Delete(Event @event)
@@ -73,20 +75,12 @@ public class EventRepository : IEventRepository
 
     private IQueryable<EventResult> GetEventsQuery(Guid userId) =>
         from @event in _context.Events
+        join category in _context.Categories on @event.CategoryId equals category.Id
         where @event.UserId.Equals(userId)
         orderby @event.InitialDate
-        select new EventResult
-        {
-            Id = @event.Id,
-            Value = @event.Value,
-            Type = @event.Type,
-            Description = @event.Description,
-            InitialDate = @event.InitialDate,
-            FinalDate = @event.FinalDate,
-            Period = @event.Period,
-            UserId = @event.UserId,
-            CategoryId = @event.CategoryId
-        };
+        select EventResult.Create(@event, category, !_context.Operations
+            .Where(x => x.EventId.Equals(@event.Id))
+            .Any(x => !x.Effected));
 
     private static IEnumerable<DateTime> GetOperationDates(DateTime initialDate, DateTime finalDate, string period)
     {

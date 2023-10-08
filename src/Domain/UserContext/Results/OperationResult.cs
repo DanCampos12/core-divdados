@@ -7,7 +7,7 @@ public class OperationResult
 {
     public OperationResult() { }
 
-    private OperationResult(Operation operation)
+    private OperationResult(Operation operation, Category category)
     {
         Id = operation.Id;
         Value = operation.Value;
@@ -16,7 +16,8 @@ public class OperationResult
         Date = operation.Date;
         Effected = operation.Effected;
         UserId = operation.UserId;
-        CategoryId = operation.CategoryId;
+        CategoryId = category.Id;
+        CategoryName = category.Name;
         EventId = operation.EventId;
     }
 
@@ -28,7 +29,8 @@ public class OperationResult
     public bool Effected { get; set; }
     public Guid UserId { get; set; }
     public Guid CategoryId { get; set; }
+    public string CategoryName { get; set; }
     public Guid? EventId { get; set; }
 
-    public static OperationResult Create(Operation operation) => new(operation);
+    public static OperationResult Create(Operation operation, Category category) => new(operation, category);
 }
