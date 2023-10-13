@@ -49,7 +49,7 @@ public sealed class UpdateCategoryHandler : Handler<UpdateCategoryCommand, Updat
             return Incomplete();
         }
 
-        category.Update(command.Name, command.Color);
+        category.Update(command.Name, command.Color, command.MaxValueMonthly);
         AddNotifications(category);
         if (Invalid) return Incomplete();
 

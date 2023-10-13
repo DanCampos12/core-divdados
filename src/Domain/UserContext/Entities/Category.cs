@@ -36,10 +36,11 @@ public sealed class Category : Entity
             .IsNotNullOrEmpty(UserId.ToString(), nameof(UserId), "Id do usuário é obrigatório"));
     }
 
-    public void Update(string name, string color)
+    public void Update(string name, string color, decimal? maxValueMonthly)
     {
         Name = name;
         Color = color;
+        MaxValueMonthly = maxValueMonthly;
         AddNotifications(this);
     }
 }

@@ -13,6 +13,8 @@ public class CategoryResult
         Name = category.Name;
         Color = category.Color;
         UserId = category.UserId;
+        IsAutomaticInput = category.IsAutomaticInput;
+        MaxValueMonthly = category.MaxValueMonthly;
         Allocation = allocation;
     }
 
@@ -20,6 +22,8 @@ public class CategoryResult
     public string Name { get; set; }
     public string Color { get; set; }
     public Guid UserId { get; set; }
+    public bool IsAutomaticInput { get; set; }  
+    public decimal? MaxValueMonthly { get; set; }
     public decimal Allocation { get; set; }
 
     public static CategoryResult Create(Category category, decimal allocation) => new(category, allocation);
