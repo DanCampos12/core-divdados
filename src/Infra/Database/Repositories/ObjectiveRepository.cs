@@ -75,6 +75,13 @@ public class ObjectiveRepository : IObjectiveRepository
                 eventId: null));
         }
 
+        var objectivesInProgress = _context.Objectives
+            .Where(x => x.UserId.Equals(objective.UserId) &&
+                        x.Status.Equals("inProgress") &&
+                        !x.Id.Equals(objective.Id))
+            .Select(x => new ObjectiveOrder(x.Id, x.Order));
+        Reorder(objective.UserId, objectivesInProgress);
+
         return ObjectiveResult.Create(objective, objective.Status.Equals("completed") ? 1.0M : 0.0M);
     }
 
