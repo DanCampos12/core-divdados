@@ -18,17 +18,20 @@ public class CategoryRepository : ICategoryRepository
         .Where(category => category.Id.Equals(id) && category.UserId.Equals(userId))
         .FirstOrDefault();
 
-    public IEnumerable<CategoryResult> GetCategories(Guid userId) =>
-        GetCategoriesQuery(userId).ToArray();
+    public IEnumerable<CategoryResult> GetCategories(Guid userId)
+    {
+        var userOperations = _context.Operations.Where(x => x.UserId.Equals(userId) && x.Effected).ToArray();
+        return GetCategoriesQuery(userId, userOperations).ToArray();
+    }
 
     public CategoryResult Add(Category category) {
         _context.Categories.Add(category);
-        return CategoryResult.Create(category);
+        return CategoryResult.Create(category, 0.0M);
     }
 
     public CategoryResult Update(Category category) {
         _context.Categories.Update(category);
-        return CategoryResult.Create(category);
+        return CategoryResult.Create(category, 0.0M);
     }
 
     public Guid Delete(Category category)
@@ -37,15 +40,16 @@ public class CategoryRepository : ICategoryRepository
         return category.Id;
     }
 
-    private IQueryable<CategoryResult> GetCategoriesQuery(Guid userId) =>
+    private IQueryable<CategoryResult> GetCategoriesQuery(Guid userId, Operation[] operations) =>
         from category in _context.Categories
         where category.UserId.Equals(userId)
         orderby category.Name
-        select new CategoryResult
-        {
-            Id = category.Id,
-            Name = category.Name,
-            Color = category.Color,
-            UserId = category.UserId
-        };
+        select CategoryResult.Create(category, GetCategoryAllocation(category, operations));
+        
+
+    private static decimal GetCategoryAllocation (Category category, Operation[] operations)
+    {
+        var categoryCount = operations.Count(x => x.CategoryId.Equals(category.Id));
+        return !operations.Any() ? 0.0M : ((decimal)categoryCount / (decimal)operations.Length);
+    }
 }

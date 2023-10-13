@@ -9,6 +9,7 @@ public class CompleteObjectiveCommand : Command<CompleteObjectiveCommandResult>
 {
     public Guid Id { get; set; }
     public Guid UserId { get; set; }
+    public bool ShouldLaunchOperation { get; set; }
 
     public override bool Validate()
     {

@@ -1,6 +1,7 @@
 ﻿using Core.Divdados.Shared.Entities;
 using Flunt.Validations;
 using System;
+using System.Net;
 
 namespace Core.Divdados.Domain.UserContext.Entities;
 
@@ -8,17 +9,23 @@ public sealed class Category : Entity
 {
     public string Name { get; private set; }
     public string Color { get; private set; }
+    public bool IsAutomaticInput { get; private set; }
+    public decimal? MaxValueMonthly { get; private set; }
     public Guid UserId { get; private set; }
 
     private Category() { }
     public Category(
         string name,
         string color,
-        Guid userId) 
+        Guid userId, 
+        bool isAutomaticInput,
+        decimal? maxValueMonthly) 
     {
         Name = name;
         Color = color;
         UserId = userId;
+        IsAutomaticInput = isAutomaticInput;
+        MaxValueMonthly = maxValueMonthly;
 
         AddNotifications(new Contract()
             .Requires()

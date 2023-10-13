@@ -41,7 +41,9 @@ public sealed class CreateCategoryHandler : Handler<CreateCategoryCommand, Creat
         var category = new Category(
             name: command.Name,
             color: command.Color,
-            userId: command.UserId);
+            userId: command.UserId, 
+            isAutomaticInput: false,
+            maxValueMonthly: command.MaxValueMonthly);
         AddNotifications(category);
         if (Invalid) return Incomplete();
 

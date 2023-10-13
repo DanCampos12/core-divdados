@@ -57,6 +57,27 @@ public class ObjectiveRepository : IObjectiveRepository
         return ObjectiveResult.Create(objective, objective.Status.Equals("completed") ? 1.0M : 0.0M);
     }
 
+    public ObjectiveResult Complete(Objective objective, bool shouldLaunchOperation)
+    {
+        _context.Objectives.Update(objective);
+
+        if (shouldLaunchOperation)
+        {
+            var category = _context.Categories.FirstOrDefault(x => x.Name.Equals("Objetivo") && x.IsAutomaticInput);
+            _context.Operations.Add(new Operation(
+                value: objective.Value,
+                type: 'O',
+                description: $"Conclusão de objetivo - {objective.Description}",
+                date: objective.FinalDate,
+                effected: true,
+                userId: objective.UserId,
+                categoryId: category.Id,
+                eventId: null));
+        }
+
+        return ObjectiveResult.Create(objective, objective.Status.Equals("completed") ? 1.0M : 0.0M);
+    }
+
     public Guid Delete(Objective objective)
     {
         var objectivesToUpdateOrder = _context.Objectives

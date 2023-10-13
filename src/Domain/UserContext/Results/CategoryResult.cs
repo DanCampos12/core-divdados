@@ -7,18 +7,20 @@ public class CategoryResult
 {
     public CategoryResult() { }
 
-    private CategoryResult(Category category)
+    private CategoryResult(Category category, decimal allocation)
     {
         Id = category.Id;
         Name = category.Name;
         Color = category.Color;
         UserId = category.UserId;
+        Allocation = allocation;
     }
 
     public Guid Id { get; set; }
     public string Name { get; set; }
     public string Color { get; set; }
     public Guid UserId { get; set; }
+    public decimal Allocation { get; set; }
 
-    public static CategoryResult Create(Category category) => new(category);
+    public static CategoryResult Create(Category category, decimal allocation) => new(category, allocation);
 }

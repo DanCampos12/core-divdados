@@ -12,6 +12,7 @@ public interface IObjectiveRepository
     IEnumerable<ObjectiveResult> GetObjectives(Guid userId);
     ObjectiveResult Add(Objective objective);
     ObjectiveResult Update(Objective objective);
+    ObjectiveResult Complete(Objective objective, bool shouldLaunchOperation);
     Guid Delete(Objective objective);
     IEnumerable<ObjectiveResult> Process(Guid userId);
     IEnumerable<ObjectiveResult> Reorder(Guid userId, IEnumerable<ObjectiveOrder> objectiveOrders);

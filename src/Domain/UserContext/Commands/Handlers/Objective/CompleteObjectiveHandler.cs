@@ -55,12 +55,12 @@ public sealed class CompleteObjectiveHandler : Handler<CompleteObjectiveCommand,
         }
 
         objective.UpdateStatus("completed");
+        objective.UpdateFinalDate(DateTime.Today); 
         AddNotifications(objective);
         if (Invalid) return Incomplete();
 
-        _commandResult.Objective = _objectiveRepository.Update(objective);
+        _commandResult.Objective = _objectiveRepository.Complete(objective, command.ShouldLaunchOperation);
         _uow.Commit();
-
         return Complete(_commandResult.Objective);
     }
 

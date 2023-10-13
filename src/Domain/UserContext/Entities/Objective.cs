@@ -66,4 +66,10 @@ public sealed class Objective : Entity
         Status = status;
         AddNotifications(this);
     }
+
+    public void UpdateFinalDate(DateTime finalDate)
+    {
+        FinalDate = finalDate;
+        AddNotifications(this);
+    }
 }

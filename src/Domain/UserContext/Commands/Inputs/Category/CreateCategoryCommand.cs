@@ -10,6 +10,7 @@ public class CreateCategoryCommand : Command<CreateCategoryCommandResult>
     public string Name { get; set; }
     public string Color { get; set; }
     public Guid UserId { get; set; }
+    public decimal? MaxValueMonthly { get; set; }
 
     public override bool Validate()
     {

@@ -5,9 +5,12 @@ using Core.Divdados.Infra.SQL.DataContext;
 using Core.Divdados.Infra.SQL.Transactions;
 using Core.Divdados.Shared.Uow;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Core.Divdados.Infra.SQL.Repositories;
+
+public record DefaultCategory(string name, string color);
 
 public class UserRepository : IUserRepository
 {
@@ -33,7 +36,19 @@ public class UserRepository : IUserRepository
         _uow.Commit();
 
         var preference = new Preference(user.Id);
+        List<DefaultCategory> defaultCategories = new()
+        {
+            new("Objetivo", "#2196F3")
+        };
+
         _context.Preferences.Add(preference);
+        _context.Categories.AddRange(defaultCategories.Select(x => new Category(
+            name: x.name,
+            color: x.color,
+            userId: user.Id,
+            isAutomaticInput: true,
+            maxValueMonthly: null)));
+
         return UserResult.Create(user, preference);
     }
 

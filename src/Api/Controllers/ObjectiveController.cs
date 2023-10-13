@@ -132,12 +132,13 @@ public class ObjectiveController : Controller
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompleteObjectiveCommandResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpPut("v1/users/{userId:guid}/objectives/{id:guid}/complete")]
-    public async Task<IActionResult> CompleteObjective(Guid id, Guid userId)
+    public async Task<IActionResult> CompleteObjective(Guid id, Guid userId, [FromQuery] bool shouldLaunchOperation)
     {
         var command = new CompleteObjectiveCommand
         {
             Id = id,
-            UserId = userId
+            UserId = userId,
+            ShouldLaunchOperation = shouldLaunchOperation
         };
         var commandResult = await _mediator.Send(command);
         return Response(commandResult);
