@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace Core.Divdados.Infra.SQL.Repositories;
 
-public record DefaultCategory(string name, string color);
+public record DefaultCategory(string Name, string Color);
 
 public class UserRepository : IUserRepository
 {
@@ -43,8 +43,8 @@ public class UserRepository : IUserRepository
 
         _context.Preferences.Add(preference);
         _context.Categories.AddRange(defaultCategories.Select(x => new Category(
-            name: x.name,
-            color: x.color,
+            name: x.Name,
+            color: x.Color,
             userId: user.Id,
             isAutomaticInput: true,
             maxValueMonthly: null)));
