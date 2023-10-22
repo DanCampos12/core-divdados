@@ -10,6 +10,7 @@ public interface IObjectiveRepository
 {
     Objective GetObjective(Guid id, Guid userId);
     IEnumerable<ObjectiveResult> GetObjectives(Guid userId);
+    IEnumerable<ObjectiveResult> GetObjectives(Guid userId, DateTime date);
     ObjectiveResult Add(Objective objective);
     ObjectiveResult Update(Objective objective);
     ObjectiveResult Complete(Objective objective, bool shouldLaunchOperation);

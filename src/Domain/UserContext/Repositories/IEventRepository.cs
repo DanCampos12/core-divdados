@@ -9,6 +9,7 @@ public interface IEventRepository
 {
     Event GetEvent(Guid id, Guid userId);
     IEnumerable<EventResult> GetEvents(Guid userId);
+    IEnumerable<EventResult> GetEvents(Guid userId, DateTime date);
     EventResult Add(Event @event);
     EventResult Update(Event @event);
     Guid Delete(Event @event);

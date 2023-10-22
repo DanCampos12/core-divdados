@@ -28,6 +28,9 @@ public class EventRepository : IEventRepository
     public IEnumerable<EventResult> GetEvents(Guid userId) =>
         GetEventsQuery(userId).ToArray();
 
+    public IEnumerable<EventResult> GetEvents(Guid userId, DateTime date) =>
+        GetEventsQuery(userId, date).ToArray();
+
     public EventResult Add(Event @event) {
         var category = _context.Categories.FirstOrDefault(x => x.Id.Equals(@event.CategoryId));
         var operationsDate = GetOperationDates(@event.InitialDate, @event.FinalDate, @event.Period);
@@ -77,7 +80,16 @@ public class EventRepository : IEventRepository
         from @event in _context.Events
         join category in _context.Categories on @event.CategoryId equals category.Id
         where @event.UserId.Equals(userId)
-        orderby @event.InitialDate
+        orderby @event.InitialDate descending
+        select EventResult.Create(@event, category, !_context.Operations
+            .Where(x => x.EventId.Equals(@event.Id))
+            .Any(x => !x.Effected));
+
+    private IQueryable<EventResult> GetEventsQuery(Guid userId, DateTime date) =>
+        from @event in _context.Events
+        join category in _context.Categories on @event.CategoryId equals category.Id
+        where @event.UserId.Equals(userId) && @event.InitialDate <= date
+        orderby @event.InitialDate descending
         select EventResult.Create(@event, category, !_context.Operations
             .Where(x => x.EventId.Equals(@event.Id))
             .Any(x => !x.Effected));

@@ -5,10 +5,10 @@ using System.Collections.Generic;
 namespace Core.Divdados.Domain.UserContext.Results;
 
 public record SummaryResult (decimal TotalValue, decimal InflowValue, decimal OutflowValue);
-public record ValueByDate (DateTime date, decimal value);
-public record AccumulatedValuesResult (string description, IEnumerable<ValueByDate> valuesByDates);
-public record CategoryAllocationResult(string name, string color, decimal allocation);
-public record OperationTypeAllocationResult(string description, decimal allocation);
+public record ValueByDate (DateTime Date, decimal Value);
+public record AccumulatedValuesResult (string Description, IEnumerable<ValueByDate> ValuesByDates);
+public record CategoryAllocationResult(string Name, string Color, decimal Value, decimal Allocation, int Count);
+public record OperationTypeAllocationResult(string Description, decimal Allocation, int Count);
 
 public class OutputDataResult
 {
@@ -16,8 +16,8 @@ public class OutputDataResult
 
     private OutputDataResult(
         DateTime date, 
-        SummaryResult summary, 
-        AccumulatedValuesResult accumulatedValues,
+        SummaryResult summary,
+        IEnumerable<AccumulatedValuesResult> accumulatedValues,
         IEnumerable<CategoryAllocationResult> categoryAllocations,
         IEnumerable<OperationTypeAllocationResult> operationTypeAllocations,
         ObjectiveResult nextObjective,
@@ -34,7 +34,7 @@ public class OutputDataResult
 
     public DateTime Date { get; set; }
     public SummaryResult Summary { get; set; }
-    public AccumulatedValuesResult AccumulatedValues { get; set; }
+    public IEnumerable<AccumulatedValuesResult> AccumulatedValues { get; set; }
     public IEnumerable<CategoryAllocationResult> CategoryAllocations { get; set; }
     public IEnumerable<OperationTypeAllocationResult> OperationTypeAllocations { get; set; }
     public ObjectiveResult NextObjective { get; set; }
@@ -42,8 +42,8 @@ public class OutputDataResult
 
     public static OutputDataResult Create(
         DateTime date, 
-        SummaryResult summary, 
-        AccumulatedValuesResult accumulatedValues,
+        SummaryResult summary,
+        IEnumerable<AccumulatedValuesResult> accumulatedValues,
         IEnumerable<CategoryAllocationResult> categoryAllocations,
         IEnumerable<OperationTypeAllocationResult> operationTypeAllocations,
         ObjectiveResult nextObjective,

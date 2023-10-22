@@ -21,6 +21,9 @@ public class OperationRepository : IOperationRepository
     public IEnumerable<OperationResult> GetOperations(Guid userId) =>
         GetOperationsQuery(userId).ToArray();
 
+    public IEnumerable<OperationResult> GetOperations(Guid userId, DateTime date) =>
+        GetOperationsQuery(userId, date).ToArray();
+
     public OperationResult Add(Operation operation) {
         _context.Operations.Add(operation);
         var category = _context.Categories.FirstOrDefault(x => x.Id.Equals(operation.CategoryId));
@@ -43,6 +46,13 @@ public class OperationRepository : IOperationRepository
         from operation in _context.Operations
         join category in _context.Categories on operation.CategoryId equals category.Id
         where operation.UserId.Equals(userId)
+        orderby operation.Date descending
+        select OperationResult.Create(operation, category);
+
+    private IQueryable<OperationResult> GetOperationsQuery(Guid userId, DateTime date) =>
+        from operation in _context.Operations
+        join category in _context.Categories on operation.CategoryId equals category.Id
+        where operation.UserId.Equals(userId) && operation.Date <= date
         orderby operation.Date descending
         select OperationResult.Create(operation, category);
 }

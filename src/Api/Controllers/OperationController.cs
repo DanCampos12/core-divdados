@@ -34,6 +34,18 @@ public class OperationController : Controller
         Ok(_operationRepository.GetOperations(userId));
 
     /// <summary>
+    /// Método que obtem as operações de um usuário até uma data base
+    /// </summary>
+    /// <param name="userId">Id do usuário</param>
+    /// <param name="date">Data</param>
+    /// <returns>Operações</returns>
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(OperationResult))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpGet("v1/users/{userId:guid}/operations/{date:DateTime}")]
+    public IActionResult GetOperations(Guid userId, DateTime date) =>
+        Ok(_operationRepository.GetOperations(userId, date));
+
+    /// <summary>
     /// Método que adiciona uma Operação
     /// </summary>
     /// <param name="userId">Id do usuário</param>

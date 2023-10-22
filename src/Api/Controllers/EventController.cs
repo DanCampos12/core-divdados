@@ -30,8 +30,20 @@ public class EventController : Controller
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(EventResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpGet("v1/users/{userId:guid}/events")]
-    public IActionResult GetOperations(Guid userId) =>
+    public IActionResult GetEvents(Guid userId) =>
         Ok(_eventRepository.GetEvents(userId));
+
+    /// <summary>
+    /// Método que obtem os eventos de um usuário até uma data base
+    /// </summary>
+    /// <param name="userId">Id do usuário</param>
+    /// <param name="date">Data</param>
+    /// <returns>Eventos</returns>
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(EventResult))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpGet("v1/users/{userId:guid}/events/{date:DateTime}")]
+    public IActionResult GetEvents(Guid userId, DateTime date) =>
+        Ok(_eventRepository.GetEvents(userId, date));
 
     /// <summary>
     /// Método que adiciona um evento

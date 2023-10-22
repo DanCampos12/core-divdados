@@ -34,6 +34,18 @@ public class ObjectiveController : Controller
         Ok(_objectiveRepository.GetObjectives(userId));
 
     /// <summary>
+    /// Método que obtem os objetivos de um usuário até uma determinada data
+    /// </summary>
+    /// <param name="userId">Id do usuário</param>
+    /// <param name="date">Data</param>
+    /// <returns>Objetivos</returns>
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ObjectiveResult))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpGet("v1/users/{userId:guid}/objectives/{date:DateTime}")]
+    public IActionResult GetObjectives(Guid userId, DateTime date) =>
+        Ok(_objectiveRepository.GetObjectives(userId, date));
+
+    /// <summary>
     /// Método que adiciona um objetivo
     /// </summary>
     /// <param name="userId">Id do usuário</param>

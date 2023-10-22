@@ -3,7 +3,6 @@ using Core.Divdados.Domain.UserContext.Entities;
 using Core.Divdados.Domain.UserContext.Repositories;
 using Core.Divdados.Domain.UserContext.Results;
 using Core.Divdados.Infra.SQL.DataContext;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -57,23 +56,46 @@ public class OutputDataRepository : IOutputDataRepository
         return new(totalValue, inflowValue, outflowValue);
     }
 
-    private AccumulatedValuesResult GetAccumulatedValues()
+    private IEnumerable<AccumulatedValuesResult> GetAccumulatedValues()
     {
         var currentDate = _operations.Min(x => x.Date);
         var valueByDate = 0.0M;
-        List<ValueByDate> valuesByDates = new() { new(currentDate.AddDays(-1), valueByDate) };
+        List<AccumulatedValuesResult> accumulatedValues = new();
+        List<ValueByDate> patrimonyValuesByDates = new() { new(currentDate.AddDays(-1), valueByDate) };
+
         while (currentDate <= _date)
         {
             var inflowValue = _operations.Where(x => x.Type.Equals('I') && x.Date.Equals(currentDate)).Sum(x => x.Value);
             var outflowValue = _operations.Where(x => x.Type.Equals('O') && x.Date.Equals(currentDate)).Sum(x => x.Value);
             valueByDate += (inflowValue - outflowValue);
-            valuesByDates.Add(new(currentDate, valueByDate));
+            patrimonyValuesByDates.Add(new(currentDate, valueByDate));
             currentDate = currentDate.AddDays(1);
         }
+        accumulatedValues.Add(new(
+            Description: "Patrimônio", 
+            ValuesByDates: patrimonyValuesByDates));
 
-        return new(
-            description: "Patrimônio", 
-            valuesByDates: valuesByDates);
+        var nextObjecive = _context.Objectives
+            .OrderBy(x => x.Order)
+            .FirstOrDefault(x => x.Status.Equals(ObjectiveStatus.IN_PROGRESS));
+
+        if (nextObjecive is not null && patrimonyValuesByDates.Count > 1)
+        {
+            valueByDate = 0.0M;
+            decimal offsetValue = nextObjecive.Value / (patrimonyValuesByDates.Count - 1);
+            List<ValueByDate> objectiveValuesByDates = new();
+            foreach (var item in patrimonyValuesByDates)
+            {
+                objectiveValuesByDates.Add(new(item.Date, Math.Round(valueByDate, 2)));
+                valueByDate += offsetValue;
+            }
+
+            accumulatedValues.Add(new(
+                Description: $"Objetivo - {nextObjecive.Description}",
+                ValuesByDates: objectiveValuesByDates));
+        }
+
+        return accumulatedValues;
     }
 
     private IEnumerable<CategoryAllocationResult> GetCategoryAllocations()
@@ -85,9 +107,15 @@ public class OutputDataRepository : IOutputDataRepository
 
         foreach (var category in _categories)
         {
-            var categoryCount = (decimal)_operations.Where(x => x.CategoryId.Equals(category.Id)).Count();
+            var categoryCount = _operations.Where(x => x.CategoryId.Equals(category.Id)).Count();
+            var value = _operations.Where(x => x.CategoryId.Equals(category.Id)).Sum(x => x.Type.Equals('I') ? x.Value : (x.Value * -1));
             if (categoryCount > 0) 
-                categoryAllocations.Add(new(category.Name, category.Color, (categoryCount / (decimal)_operations.Count())));
+                categoryAllocations.Add(new(
+                    Name: category.Name, 
+                    Color: category.Color, 
+                    Value: value, 
+                    Allocation: ((decimal)categoryCount / (decimal)_operations.Count()), 
+                    Count: categoryCount));
         }
 
         return categoryAllocations;
@@ -100,10 +128,10 @@ public class OutputDataRepository : IOutputDataRepository
         if (!_operations.Any())
             return operationTypeAllocations;
 
-        var inflowCount = (decimal)_operations.Where(x => x.Type.Equals('I')).Count();
-        var outflowCount = (decimal)_operations.Where(x => x.Type.Equals('O')).Count();
-        operationTypeAllocations.Add(new(description: "Entradas", allocation: (inflowCount / (decimal)_operations.Count())));
-        operationTypeAllocations.Add(new(description: "Saídas", allocation: (outflowCount / (decimal)_operations.Count())));
+        var inflowCount = _operations.Where(x => x.Type.Equals('I')).Count();
+        var outflowCount = _operations.Where(x => x.Type.Equals('O')).Count();
+        operationTypeAllocations.Add(new(Description: "Entradas", Allocation: ((decimal)inflowCount / (decimal)_operations.Count()), Count: inflowCount));
+        operationTypeAllocations.Add(new(Description: "Saídas", Allocation: ((decimal)outflowCount / (decimal)_operations.Count()), Count: outflowCount));
 
         return operationTypeAllocations;
     }
@@ -131,5 +159,5 @@ public class OutputDataRepository : IOutputDataRepository
         where operation.UserId.Equals(_userId) && !operation.Effected && operation.Date >= _date
         orderby operation.Date, operation.Description
         select OperationResult.Create(operation, category))
-        .Take(10);
+        .Take(5);
 }

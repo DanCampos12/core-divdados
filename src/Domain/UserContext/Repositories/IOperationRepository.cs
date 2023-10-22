@@ -9,6 +9,7 @@ public interface IOperationRepository
 {
     Operation GetOperation(Guid id, Guid userId);
     IEnumerable<OperationResult> GetOperations(Guid userId);
+    IEnumerable<OperationResult> GetOperations(Guid userId, DateTime date);
     OperationResult Add(Operation operation);
     OperationResult Update(Operation operation);
     Guid Delete(Operation operation);
