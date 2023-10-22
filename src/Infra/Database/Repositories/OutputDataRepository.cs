@@ -15,6 +15,7 @@ public class OutputDataRepository : IOutputDataRepository
     private Guid _userId;
     private DateTime _date;
     private IEnumerable<Operation> _operations;
+    private IEnumerable<Objective> _objectives;
     private IEnumerable<Category> _categories;
 
     public OutputDataRepository(UserDataContext context)
@@ -25,6 +26,7 @@ public class OutputDataRepository : IOutputDataRepository
         _userId = userId;
         _date = date;
         _operations = GetOperations(userId, date);
+        _objectives = GetObjetives(userId);
         _categories = GetCategories(userId);
 
         return OutputDataResult.Create(
@@ -40,6 +42,12 @@ public class OutputDataRepository : IOutputDataRepository
     private IEnumerable<Operation> GetOperations(Guid userId, DateTime date)
         => _context.Operations
         .Where(x => x.UserId.Equals(userId) && x.Date <= date && x.Effected)
+        .ToArray();
+
+    private IEnumerable<Objective> GetObjetives(Guid userId)
+        => _context.Objectives
+        .Where(x => x.UserId.Equals(userId))
+        .OrderBy(x => x.Order)
         .ToArray();
 
     private IEnumerable<Category> GetCategories(Guid userId)
@@ -58,6 +66,9 @@ public class OutputDataRepository : IOutputDataRepository
 
     private IEnumerable<AccumulatedValuesResult> GetAccumulatedValues()
     {
+        if (!_operations.Any())
+            return Array.Empty<AccumulatedValuesResult>();  
+
         var currentDate = _operations.Min(x => x.Date);
         var valueByDate = 0.0M;
         List<AccumulatedValuesResult> accumulatedValues = new();
@@ -75,10 +86,7 @@ public class OutputDataRepository : IOutputDataRepository
             Description: "Patrimônio", 
             ValuesByDates: patrimonyValuesByDates));
 
-        var nextObjecive = _context.Objectives
-            .OrderBy(x => x.Order)
-            .FirstOrDefault(x => x.Status.Equals(ObjectiveStatus.IN_PROGRESS));
-
+        var nextObjecive = _objectives.FirstOrDefault(x => x.Status.Equals(ObjectiveStatus.IN_PROGRESS));
         if (nextObjecive is not null && patrimonyValuesByDates.Count > 1)
         {
             valueByDate = 0.0M;
@@ -139,16 +147,14 @@ public class OutputDataRepository : IOutputDataRepository
     private ObjectiveResult GetNextObjective()
     {
         var summary = GetSummary();
-        var objecive = _context.Objectives
-            .OrderBy(x => x.Order)
-            .FirstOrDefault(x => x.Status.Equals(ObjectiveStatus.IN_PROGRESS));
-        
-        var progress = 0.0M;
-        if (summary.TotalValue > 0.0M)
-            progress = summary.TotalValue / objecive.Value;
+        var objecive = _objectives.FirstOrDefault(x => x.Status.Equals(ObjectiveStatus.IN_PROGRESS));
 
-        if (progress > 1.0M)
-            progress = 1.0M;
+        if (objecive is null)
+            return null;
+
+        var progress = 0.0M;
+        if (summary.TotalValue > 0.0M) progress = (summary.TotalValue / objecive.Value);
+        if (progress > 1.0M) progress = 1.0M;
 
         return ObjectiveResult.Create(objecive, progress);
     }
