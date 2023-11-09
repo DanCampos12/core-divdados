@@ -80,7 +80,7 @@ public class EventRepository : IEventRepository
         from @event in _context.Events
         join category in _context.Categories on @event.CategoryId equals category.Id
         where @event.UserId.Equals(userId)
-        orderby @event.InitialDate descending
+        orderby @event.InitialDate descending, @event.Description ascending
         select EventResult.Create(@event, category, !_context.Operations
             .Where(x => x.EventId.Equals(@event.Id))
             .Any(x => !x.Effected));
@@ -89,7 +89,7 @@ public class EventRepository : IEventRepository
         from @event in _context.Events
         join category in _context.Categories on @event.CategoryId equals category.Id
         where @event.UserId.Equals(userId) && @event.InitialDate <= date
-        orderby @event.InitialDate descending
+        orderby @event.InitialDate descending, @event.Description ascending
         select EventResult.Create(@event, category, !_context.Operations
             .Where(x => x.EventId.Equals(@event.Id))
             .Any(x => !x.Effected));

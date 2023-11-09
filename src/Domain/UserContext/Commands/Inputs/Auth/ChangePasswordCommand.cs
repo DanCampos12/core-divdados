@@ -17,7 +17,6 @@ public class ChangePasswordCommand : Command<ChangePasswordCommandResult>
         AddNotifications(new Contract()
             .Requires()
             .IsNotNullOrEmpty(UserId.ToString(), nameof(UserId), "Id do usuário é obrigatório")
-            .IsNotNullOrEmpty(Password, nameof(Password), "Senha do usuário é obrigatória")
             .IsNotNullOrEmpty(NewPassword, nameof(NewPassword), "Nova senha do usuário é obrigatória")
             .HasMaxLengthIfNotNullOrEmpty(NewPassword, 100, nameof(NewPassword), "Senha não pode ter mais que 100 caracteres")
             .IsNotNullOrEmpty(ConfirmNewPassword, nameof(ConfirmNewPassword), "Confirmação de senha é obrigatória")

@@ -18,7 +18,7 @@ public sealed class AuthService
         _jwtBearer = jwtBearer;
     }
 
-    public string GenerateToken(User user)
+    public string GenerateToken(User user, DateTime expires)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.UTF8.GetBytes(_jwtBearer.SecretKey);
@@ -32,7 +32,7 @@ public sealed class AuthService
         {
             Issuer = _jwtBearer.ValidIssuer,
             Audience = _jwtBearer.ValidAudience,
-            Expires = DateTime.UtcNow.AddDays(3),
+            Expires = expires,
             Subject = new ClaimsIdentity(userCustomClaims),
             SigningCredentials = new SigningCredentials(
                 new SymmetricSecurityKey(key), 

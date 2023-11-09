@@ -11,19 +11,22 @@ public sealed class Notification : Entity
     public string Message { get; private set; }
     public bool Read { get; private set; }
     public Guid UserId { get; private set; }
+    public Guid? ExternalId { get; private set; }
 
     private Notification() { }
     public Notification(
         string message,
         string type,
         bool read, 
-        Guid userId) 
+        Guid userId, 
+        Guid? externalId) 
     {
         Date = DateTime.Now;
         Message = message;
         Type = type;
         Read = read;
         UserId = userId;
+        ExternalId = externalId;
 
         AddNotifications(new Contract()
             .Requires()

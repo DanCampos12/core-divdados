@@ -7,6 +7,7 @@ using Core.Divdados.Domain.UserContext.Services;
 using Core.Divdados.Shared.Commands;
 using Core.Divdados.Shared.Uow;
 using Microsoft.Extensions.Configuration;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,19 +15,16 @@ namespace Core.Divdados.Domain.UserContext.Commands.Handlers;
 
 public sealed class ChangePasswordHandler : Handler<ChangePasswordCommand, ChangePasswordCommandResult>
 {
-    private readonly IAuthRepository _authRepository;
     private readonly IUserRepository _userRepository;
     private readonly AuthService _authService;
     private readonly IUow _uow;
     private readonly ChangePasswordCommandResult _commandResult;
 
     public ChangePasswordHandler(
-        IAuthRepository authRepository,
         IUserRepository userRepository,
         IUow uow,
         IConfiguration configuration)
     {
-        _authRepository = authRepository;
         _userRepository = userRepository;
         _authService = new AuthService(configuration.GetSection("Settings").Get<Settings>().JwtBearer);
         _uow = uow;
@@ -48,7 +46,7 @@ public sealed class ChangePasswordHandler : Handler<ChangePasswordCommand, Chang
             return Incomplete();
         }
 
-        if (!AuthService.ValidatePassword(command.Password, user.Password))
+        if (user.FlowComplete && !AuthService.ValidatePassword(command.Password, user.Password))
         {
             AddNotification(nameof(command.Password), $"Senha informada não corresponde");
             return Incomplete();
@@ -61,8 +59,9 @@ public sealed class ChangePasswordHandler : Handler<ChangePasswordCommand, Chang
         }
 
         user.UpdatePassword(AuthService.EncryptPassword(command.NewPassword));
+        user.UpdateFlowComplete(true);
         _commandResult.User = _userRepository.Update(user);
-        _commandResult.IdToken = _authService.GenerateToken(user);
+        _commandResult.IdToken = _authService.GenerateToken(user, DateTime.UtcNow.AddDays(3));
         _uow.Commit();
 
         return Complete(new { _commandResult.User, _commandResult.IdToken });

@@ -4,6 +4,7 @@ using Core.Divdados.Domain.UserContext.Entities;
 using Core.Divdados.Domain.UserContext.Repositories;
 using Core.Divdados.Domain.UserContext.Results;
 using Core.Divdados.Infra.SQL.DataContext;
+using Core.Divdados.Shared.Uow;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,8 @@ public class ObjectiveRepository : IObjectiveRepository
 {
     public UserDataContext _context;
 
-    public ObjectiveRepository(UserDataContext context) => _context = context;
+    public ObjectiveRepository(UserDataContext context, IUow uow)
+        => _context = context;
 
     public Objective GetObjective(Guid id, Guid userId) => _context.Objectives
         .Where(objective => objective.Id.Equals(id) && objective.UserId.Equals(userId))
@@ -84,10 +86,36 @@ public class ObjectiveRepository : IObjectiveRepository
         return ObjectiveResult.Create(objective, objective.Status.Equals("completed") ? 1.0M : 0.0M);
     }
 
+    public Guid Delete(Objective objective)
+    {
+        var objectivesToUpdateOrder = _context.Objectives
+            .Where(x => x.UserId.Equals(objective.UserId) && x.Order > objective.Order)
+            .OrderBy(x => x.Order);
+
+        var index = 0;
+        foreach (var objectiveToUpdateOrder in objectivesToUpdateOrder)
+        {
+            objectiveToUpdateOrder.UpdateOrder(objective.Order + index);
+            index++;
+        }
+
+        _context.Objectives.Remove(objective);
+        _context.Objectives.UpdateRange(objectivesToUpdateOrder);
+        return objective.Id;
+    }
+
     public ObjectiveResult Complete(Objective objective, bool shouldLaunchOperation)
     {
-        _context.Objectives.Update(objective);
+        var notification = new Notification(
+            $"Parabéns por concluir o objetivo {objective.Description}! " +
+            $"Agora é hora de focar no próximo desafio. Vamos continuar a jornada juntos.",
+            NotificationTypes.OBJECTIVE_COMPLETED,
+            false,
+            objective.UserId,
+            objective.Id);
 
+        _context.Objectives.Update(objective);
+        _context.Notifications.Add(notification); 
         if (shouldLaunchOperation)
         {
             var category = _context.Categories.FirstOrDefault(x => x.Name.Equals("Objetivo") && x.IsAutomaticInput);
@@ -107,27 +135,9 @@ public class ObjectiveRepository : IObjectiveRepository
                         x.Status.Equals("inProgress") &&
                         !x.Id.Equals(objective.Id))
             .Select(x => new ObjectiveOrder(x.Id, x.Order));
+
         Reorder(objective.UserId, objectivesInProgress);
-
         return ObjectiveResult.Create(objective, objective.Status.Equals("completed") ? 1.0M : 0.0M);
-    }
-
-    public Guid Delete(Objective objective)
-    {
-        var objectivesToUpdateOrder = _context.Objectives
-            .Where(x => x.UserId.Equals(objective.UserId) && x.Order > objective.Order)
-            .OrderBy(x => x.Order);
-
-        var index = 0;
-        foreach (var objectiveToUpdateOrder in objectivesToUpdateOrder)
-        {
-            objectiveToUpdateOrder.UpdateOrder(objective.Order + index);
-            index++;
-        }
-
-        _context.Objectives.Remove(objective);
-        _context.Objectives.UpdateRange(objectivesToUpdateOrder);
-        return objective.Id;
     }
 
     public IEnumerable<ObjectiveResult> Process(Guid userId)
@@ -142,14 +152,15 @@ public class ObjectiveRepository : IObjectiveRepository
             objectiveToUpdateStatus.UpdateStatus(ObjectiveStatus.EXPIRED);
 
         var notifications = objectivesToUpdateStatus.Select(x => new Notification(
-            $"O objetivo {x.Description} com data término em {x.FinalDate:dd/MM/yyyy} expirou!",
+            $"O objetivo {x.Description} expirou. Não desanime. " +
+            $"Use essa experiência para crescer e definir novas metas. O sucesso está a caminho!",
             NotificationTypes.OBJECTIVE_EXPIRED,
             false,
-            x.UserId));
+            x.UserId, 
+            x.Id));
         
         _context.Objectives.UpdateRange(objectivesToUpdateStatus);
         _context.Notifications.AddRange(notifications);
-        Console.WriteLine(notifications);
         return objectivesToUpdateStatus.Select(x => ObjectiveResult.Create(x, 0.0M));
     }
 
@@ -174,6 +185,10 @@ public class ObjectiveRepository : IObjectiveRepository
         }
 
         _context.Objectives.UpdateRange(objectives);
+        _context.Notifications.RemoveRange(_context.Notifications.Where(x =>
+            x.UserId.Equals(userId) &&
+            objectives.Any(y => y.Status.Equals(ObjectiveStatus.IN_PROGRESS) && y.Id.Equals(x.ExternalId)) &&
+            (x.Type.Equals(NotificationTypes.OBJECTIVE_HALF_COMPLETED) || x.Type.Equals(NotificationTypes.OBJECTIVE_FINISHED))));
         return objectives.Select(x => ObjectiveResult.Create(x, x.Status.Equals("completed") ? 1.0M : 0.0M));
     }
 

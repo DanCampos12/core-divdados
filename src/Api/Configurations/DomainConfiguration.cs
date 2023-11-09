@@ -24,7 +24,6 @@ public static class DomainConfiguration
     private static void AddRepositories(this IServiceCollection services)
     {
         services.AddTransient<IUserRepository, UserRepository>();
-        services.AddTransient<IAuthRepository, AuthRepository>();
         services.AddTransient<ICategoryRepository, CategoryRepository>();
         services.AddTransient<IEventRepository, EventRepository>();
         services.AddTransient<IOperationRepository, OperationRepository>();

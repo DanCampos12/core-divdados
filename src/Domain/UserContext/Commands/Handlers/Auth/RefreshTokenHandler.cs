@@ -7,6 +7,7 @@ using Core.Divdados.Domain.UserContext.Services;
 using Core.Divdados.Shared.Commands;
 using Core.Divdados.Shared.Uow;
 using Microsoft.Extensions.Configuration;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,19 +15,16 @@ namespace Core.Divdados.Domain.UserContext.Commands.Handlers;
 
 public sealed class RefreshTokenHandler : Handler<RefreshTokenCommand, RefreshTokenCommandResult>
 {
-    private readonly IAuthRepository _authRepository;
     private readonly IUserRepository _userRepository;
     private readonly AuthService _authService;
     private readonly IUow _uow;
     private readonly RefreshTokenCommandResult _commandResult;
 
     public RefreshTokenHandler(
-        IAuthRepository authRepository,
         IUserRepository userRepository,
         IUow uow,
         IConfiguration configuration)
     {
-        _authRepository = authRepository;
         _userRepository = userRepository;
         _authService = new AuthService(configuration.GetSection("Settings").Get<Settings>().JwtBearer);
         _uow = uow;
@@ -56,7 +54,7 @@ public sealed class RefreshTokenHandler : Handler<RefreshTokenCommand, RefreshTo
         }
 
         var userPreference = _userRepository.GetPreference(user.Id);
-        var userIdToken = _authService.GenerateToken(user);
+        var userIdToken = _authService.GenerateToken(user, DateTime.UtcNow.AddDays(3));
         _commandResult.User = UserResult.Create(user, userPreference);
         _commandResult.IdToken = userIdToken;
 

@@ -66,4 +66,18 @@ public class AuthController : Controller
         var commandResult = await _mediator.Send(command);
         return Response(commandResult);
     }
+
+    /// <summary>
+    /// Método que recupera a senha de usuário por email
+    /// </summary>
+    /// <param name="command">Informações do usuário</param>
+    /// <returns>Sucesso ou Falha</returns>
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RecoverPasswordCommandResult))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpPost("v1/users/auth/recover-password")]
+    public async Task<IActionResult> RecoverPassword([FromBody] RecoverPasswordCommand command)
+    {
+        var commandResult = await _mediator.Send(command);
+        return Response(commandResult);
+    }
 }

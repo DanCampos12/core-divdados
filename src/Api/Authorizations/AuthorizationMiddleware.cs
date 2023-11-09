@@ -28,7 +28,7 @@ public class AuthorizationMiddleware
         var headerAuthorization = context.Request.Headers["authorization"].ToString();
         var httpMethod = context.Request.Method.ToString();
         var httpPathValue = context.Request.Path.Value;
-        var registerPaths = new string[] { "/v1/users", "/v1/users/auth/sign-in" };
+        var registerPaths = new string[] { "/v1/users", "/v1/users/auth/sign-in", "/v1/users/auth/recover-password" };
         Guid? userId = null;
 
         if (httpMethod.Equals("OPTIONS"))

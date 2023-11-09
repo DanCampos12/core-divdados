@@ -46,13 +46,13 @@ public class OperationRepository : IOperationRepository
         from operation in _context.Operations
         join category in _context.Categories on operation.CategoryId equals category.Id
         where operation.UserId.Equals(userId)
-        orderby operation.Date descending
+        orderby operation.Date descending, operation.Description ascending
         select OperationResult.Create(operation, category);
 
     private IQueryable<OperationResult> GetOperationsQuery(Guid userId, DateTime date) =>
         from operation in _context.Operations
         join category in _context.Categories on operation.CategoryId equals category.Id
         where operation.UserId.Equals(userId) && operation.Date <= date
-        orderby operation.Date descending
+        orderby operation.Date descending, operation.Description ascending
         select OperationResult.Create(operation, category);
 }

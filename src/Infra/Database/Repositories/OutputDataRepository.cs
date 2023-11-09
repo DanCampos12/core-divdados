@@ -119,6 +119,7 @@ public class OutputDataRepository : IOutputDataRepository
             var value = _operations.Where(x => x.CategoryId.Equals(category.Id)).Sum(x => x.Type.Equals('I') ? x.Value : (x.Value * -1));
             if (categoryCount > 0) 
                 categoryAllocations.Add(new(
+                    Id: category.Id,
                     Name: category.Name, 
                     Color: category.Color, 
                     Value: value, 

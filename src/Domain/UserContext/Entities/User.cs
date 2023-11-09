@@ -11,6 +11,7 @@ public sealed class User : Entity
     public DateTime BirthDate { get; private set; }
     public string Password { get; private set; }
     public char Sex { get; private set; }
+    public bool FlowComplete { get; set; }
 
     private User () { }
     public User(
@@ -18,13 +19,15 @@ public sealed class User : Entity
         string email,
         DateTime birthDate,
         string password,
-        char sex) 
+        char sex, 
+        bool flowComplete) 
     {
         Name = name;
         Email = email;
         BirthDate = birthDate;
         Password = password;
         Sex = sex;
+        FlowComplete = flowComplete;
 
         AddNotifications(new Contract()
             .Requires()
@@ -46,5 +49,10 @@ public sealed class User : Entity
     public void UpdatePassword(string password)
     {
         Password = password;
+    }
+
+    public void UpdateFlowComplete(bool flowComplete)
+    {
+        FlowComplete = flowComplete;
     }
 }

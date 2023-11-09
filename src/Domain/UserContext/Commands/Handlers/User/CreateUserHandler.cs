@@ -37,7 +37,8 @@ public sealed class CreateUserHandler : Handler<CreateUserCommand, CreateUserCom
             email: command.Email,
             password: AuthService.EncryptPassword(command.Password),
             birthDate: command.BirthDate,
-            sex: command.Sex);
+            sex: command.Sex,
+            flowComplete: true);
         AddNotifications(user);
         if (Invalid) return Incomplete();
 

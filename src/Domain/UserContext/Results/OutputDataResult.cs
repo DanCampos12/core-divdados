@@ -7,7 +7,7 @@ namespace Core.Divdados.Domain.UserContext.Results;
 public record SummaryResult (decimal TotalValue, decimal InflowValue, decimal OutflowValue);
 public record ValueByDate (DateTime Date, decimal Value);
 public record AccumulatedValuesResult (string Description, IEnumerable<ValueByDate> ValuesByDates);
-public record CategoryAllocationResult(string Name, string Color, decimal Value, decimal Allocation, int Count);
+public record CategoryAllocationResult(Guid Id, string Name, string Color, decimal Value, decimal Allocation, int Count);
 public record OperationTypeAllocationResult(string Description, decimal Allocation, int Count);
 
 public class OutputDataResult

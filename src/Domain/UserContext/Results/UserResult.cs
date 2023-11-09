@@ -14,6 +14,7 @@ public class UserResult
         BirthDate = user.BirthDate;
         Email = user.Email;
         Sex = user.Sex;
+        FlowComplete = user.FlowComplete;
         Preference = PreferenceResult.Create(preference);
     }
 
@@ -22,6 +23,7 @@ public class UserResult
     public string Email { get; set; }
     public DateTime BirthDate { get; set; }
     public char Sex { get; set; }
+    public bool FlowComplete { get; set; }
     public PreferenceResult Preference { get; set; }
 
     public static UserResult Create(User user, Preference preference) => new(user, preference);
