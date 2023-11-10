@@ -5,7 +5,7 @@ public class Settings
     public string Environment { get; set; }
     public string ConnectionString { get; set; }
     public JwtBearer JwtBearer { get; set; }
-    public AWS AWS { get; set; }
+    public SendGrid SendGrid { get; set; }
 }
 
 public class JwtBearer
@@ -15,8 +15,8 @@ public class JwtBearer
     public string SecretKey { get; set; }
 }
 
-public class AWS
+public class SendGrid
 {
-    public string AccessKeyId { get; set; }
-    public string SecretAccessKeyId { get; set; }
+    public string Password { get; set; }
+    public string ApiKey { get; set; }
 }

@@ -1,7 +1,5 @@
-﻿using Amazon.SimpleEmail.Model;
-using Core.Divdados.Domain.UserContext.Entities;
+﻿using Core.Divdados.Domain.UserContext.Entities;
 using Core.Divdados.Domain.UserContext.Results;
-using Core.Divdados.Domain.UserContext.Services;
 using System;
 using System.Threading.Tasks;
 
@@ -15,5 +13,5 @@ public interface IUserRepository
     UserResult Add(User user);
     UserResult Update(User user);
     UserResult UpdatePreference(User user, Preference preference);
-    Task<string> RecoverPassword(User user, string idToken, AwsService awsService);
+    Task<string> RecoverPassword(User user, string idToken, string apiKey);
 }

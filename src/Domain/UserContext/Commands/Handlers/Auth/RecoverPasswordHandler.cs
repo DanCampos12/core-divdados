@@ -16,7 +16,7 @@ public sealed class RecoverPasswordHandler : Handler<RecoverPasswordCommand, Rec
 {
     private readonly IUserRepository _userRepository;
     private readonly AuthService _authService;
-    private readonly AwsService _awsService;
+    private readonly string _sendGridApiKey;
     private readonly IUow _uow;
     private readonly RecoverPasswordCommandResult _commandResult;
 
@@ -27,7 +27,7 @@ public sealed class RecoverPasswordHandler : Handler<RecoverPasswordCommand, Rec
     {
         _userRepository = userRepository;
         _authService = new AuthService(configuration.GetSection("Settings").Get<Settings>().JwtBearer);
-        _awsService = new AwsService(configuration.GetSection("Settings").Get<Settings>().AWS);
+        _sendGridApiKey = configuration.GetSection("Settings").Get<Settings>().SendGrid.ApiKey;
         _uow = uow;
         _commandResult = new();
     }
@@ -48,7 +48,7 @@ public sealed class RecoverPasswordHandler : Handler<RecoverPasswordCommand, Rec
         }
 
         var idToken = _authService.GenerateToken(user, DateTime.UtcNow.AddMinutes(30));
-        _commandResult.Message = await _userRepository.RecoverPassword(user, idToken, _awsService);
+        _commandResult.Message = await _userRepository.RecoverPassword(user, idToken, _sendGridApiKey);
         user.UpdateFlowComplete(false);
         _userRepository.Update(user);
         _uow.Commit();
