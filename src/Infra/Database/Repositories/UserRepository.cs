@@ -42,7 +42,14 @@ public class UserRepository : IUserRepository
         var preference = new Preference(user.Id);
         List<DefaultCategory> defaultCategories = new()
         {
-            new("Objetivo", "#2196F3")
+            new("Alimentação", "#E57373"),
+            new("Educação", "#1565C0"),
+            new("Esporte", "#FFB74D"),
+            new("Impostos", "#C62828"),
+            new("Lazer", "#BA68C8"),
+            new("Objetivo", "#17967F"),
+            new("Salário", "#A5D6A7"),
+            new("Saúde", "#43A047")
         };
 
         _context.Preferences.Add(preference);

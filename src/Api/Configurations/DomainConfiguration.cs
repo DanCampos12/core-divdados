@@ -1,5 +1,4 @@
-﻿using Core.Divdados.Api.Authorizations;
-using Core.Divdados.Domain.UserContext.Repositories;
+﻿using Core.Divdados.Domain.UserContext.Repositories;
 using Core.Divdados.Infra.SQL.Repositories;
 using Core.Divdados.Infra.SQL.Transactions;
 using Core.Divdados.Shared.Uow;
@@ -29,5 +28,6 @@ public static class DomainConfiguration
         services.AddTransient<IOperationRepository, OperationRepository>();
         services.AddTransient<IObjectiveRepository, ObjectiveRepository>();
         services.AddTransient<IOutputDataRepository, OutputDataRepository>();
+        services.AddTransient<INotificationRepository, NotificationRepository>();
     }
 }

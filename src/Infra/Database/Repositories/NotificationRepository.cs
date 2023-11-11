@@ -5,6 +5,7 @@ using Core.Divdados.Domain.UserContext.Results;
 using Core.Divdados.Infra.SQL.DataContext;
 using Core.Divdados.Shared.Uow;
 using Microsoft.AspNetCore.JsonPatch.Operations;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,10 +17,10 @@ namespace Core.Divdados.Infra.SQL.Repositories;
 public class NotificationRepository : INotificationRepository
 {
     public UserDataContext _context;
-    private IUow _uow;
-    private IObjectiveRepository _objectiveRepository;
-    private IOperationRepository _operationRepository;
-    private ICategoryRepository _categoryRepository;
+    private readonly IUow _uow;
+    private readonly IObjectiveRepository _objectiveRepository;
+    private readonly IOperationRepository _operationRepository;
+    private readonly ICategoryRepository _categoryRepository;
 
     public NotificationRepository(
         UserDataContext context, 
@@ -35,182 +36,267 @@ public class NotificationRepository : INotificationRepository
         _categoryRepository = categoryRepository;
     }
 
+    public Notification Get(Guid Id) =>
+        _context.Notifications.FirstOrDefault(x => x.Id.Equals(Id));
+
+    public IEnumerable<NotificationResult> UpdateRange(IEnumerable<Notification> notifications)
+    {
+        _context.Notifications.UpdateRange(notifications);
+        return notifications.Select(NotificationResult.Create);
+    }
+
     public IEnumerable<NotificationResult> Process(Guid userId)
     {
-        // Remove notifications that are not in the date range
-        var finalDate = DateTime.Today;
-        var initialDate = finalDate.AddDays(-30);
-        _context.Notifications.RemoveRange(_context.Notifications
-            .Where(x => x.UserId.Equals(userId) && x.Date < initialDate));
+        var today = DateTime.Today;
+        var newNotifications = new List<Notification>();
+        var objectives = _objectiveRepository.GetObjectives(userId, today)
+            .Where(x => x.Status.Equals(ObjectiveStatus.IN_PROGRESS));
+        var operations = _operationRepository.GetOperations(userId, today);
+        var categories = _categoryRepository.GetCategories(userId);
+
+        DeleteNotifications(userId, today);
+        var currentNotifications = _context.Notifications.Where(x => x.UserId.Equals(userId)).ToList();
+        newNotifications.AddRange(ProcessObjectivesNotifications(userId, today, currentNotifications, objectives));
+        newNotifications.AddRange(ProcessOperationsNotifications(userId, today, currentNotifications, operations));
+        newNotifications.AddRange(ProcessCategoriesNotifications(userId, today, currentNotifications, categories, operations));
+
+        _context.Notifications.AddRange(newNotifications);
         _uow.Commit();
 
-        var notificationsToAdd = new List<Notification>();
-        var notifications = _context.Notifications.Where(x => x.UserId.Equals(userId)).ToList();
+        return _context.Notifications.Where(x => x.UserId.Equals(userId))
+            .OrderByDescending(x => x.Date)
+            .Select(NotificationResult.Create);
+    }
 
-        // Objective Notifications
-        var objectivesInProgress = _objectiveRepository
-            .GetObjectives(userId, finalDate)
-            .Where(x => x.Status.Equals(ObjectiveStatus.IN_PROGRESS));
+    private void DeleteNotifications(Guid userId, DateTime today)
+    {
+        _context.Notifications.RemoveRange(_context.Notifications.Where(x =>
+            x.UserId.Equals(userId) &&
+            x.Date < today.AddDays(-30)));
+        _uow.Commit();
+    }
 
-        foreach (var objective in objectivesInProgress)
+    private List<Notification> ProcessObjectivesNotifications(
+        Guid userId,
+        DateTime today,
+        List<Notification> currentNotifications,
+        IEnumerable<ObjectiveResult> objectives)
+    {
+        var newNotifications = new List<Notification>();
+        foreach (var objective in objectives)
         {
-            var hasHalfCompletedNotification = notifications.Any(x =>
+            var halfCompletedNotification = currentNotifications.FirstOrDefault(x =>
                 x.ExternalId.Equals(objective.Id) &&
                 x.Type.Equals(NotificationTypes.OBJECTIVE_HALF_COMPLETED));
-            if (objective.Progress >= 0.5M && objective.Progress < 1.0M && !hasHalfCompletedNotification)
+            if (objective.Progress >= 0.5M && objective.Progress < 1.0M)
             {
-                notificationsToAdd.Add(new Notification(
-                    $"Parabéns! Você já completou 50% do objetivo {objective.Description}. " +
-                    $"Continue assim, você está no caminho certo!",
-                    NotificationTypes.OBJECTIVE_HALF_COMPLETED,
-                    false,
-                    userId,
-                    objective.Id));
-            }
+                if (halfCompletedNotification is null)
+                    newNotifications.Add(new Notification(
+                        title: "Objetivo 50% atingido",
+                        message: $"Parabéns! Você já completou 50% do objetivo {objective.Description}. " +
+                        $"Continue assim, você está no caminho certo!",
+                        type: NotificationTypes.OBJECTIVE_HALF_COMPLETED,
+                        userId: userId,
+                        externalId: objective.Id));
+            } 
+            else if (halfCompletedNotification is not null)
+                _context.Notifications.Remove(halfCompletedNotification);
 
-            var hasFinishedNotification = notifications.Any(x =>
+            var finishedNotification = currentNotifications.FirstOrDefault(x =>
                 x.ExternalId.Equals(objective.Id) &&
                 x.Type.Equals(NotificationTypes.OBJECTIVE_FINISHED));
-            if (objective.Progress == 1.0M && !hasFinishedNotification)
+            if (objective.Progress == 1.0M)
             {
-                notificationsToAdd.Add(new Notification(
-                    $"Parabéns! Você completou 100% do objetivo {objective.Description}. " +
-                    $"Agora você está apto a concluí-lo!",
-                    NotificationTypes.OBJECTIVE_FINISHED,
-                    false,
-                    userId,
-                    objective.Id));
+                if (finishedNotification is null)
+                    newNotifications.Add(new Notification(
+                        title: "Objetivo 100% atingido",
+                        message: $"Parabéns! Você completou 100% do objetivo {objective.Description}. " +
+                        $"Agora você está apto a concluí-lo!",
+                        type: NotificationTypes.OBJECTIVE_FINISHED,
+                        userId: userId,
+                        externalId: objective.Id));
             }
+            else if (finishedNotification is not null)
+                _context.Notifications.Remove(finishedNotification);
 
-            var hasExpiringInFiveDaysNotification = notifications.Any(x =>
+            var expiringInFiveDaysNotification = currentNotifications.FirstOrDefault(x =>
                 x.ExternalId.Equals(objective.Id) &&
                 x.Type.Equals(NotificationTypes.OBJECTIVE_EXPIRING_IN_FIVE_DAYS));
-            if (objective.FinalDate.AddDays(-5).Equals(finalDate) && !hasExpiringInFiveDaysNotification)
+            if (objective.FinalDate.AddDays(-5).Date.Equals(today.Date))
             {
-                notificationsToAdd.Add(new Notification(
-                    $"O objetivo {objective.Description} expira em 5 dias. " +
-                    $"Mantenha o foco e continue trabalhando para atingir sua meta a tempo. " +
-                    $"Você está no caminho certo! ",
-                    NotificationTypes.OBJECTIVE_EXPIRING_IN_FIVE_DAYS,
-                    false,
-                    userId,
-                    objective.Id));
+                if (expiringInFiveDaysNotification is null)
+                    newNotifications.Add(new Notification(
+                        title: "Objetivo à expirar",
+                        message: $"O objetivo {objective.Description} expira em 5 dias. " +
+                        $"Mantenha o foco e continue trabalhando para atingir sua meta a tempo. " +
+                        $"Você está no caminho certo! ",
+                        type: NotificationTypes.OBJECTIVE_EXPIRING_IN_FIVE_DAYS,
+                        userId: userId,
+                        externalId: objective.Id));
             }
+            else if (expiringInFiveDaysNotification is not null)
+                _context.Notifications.Remove(expiringInFiveDaysNotification);
 
-            var hasExpiringTomorrowNotification = notifications.Any(x =>
+            var expiringTomorrowNotification = currentNotifications.FirstOrDefault(x =>
                 x.ExternalId.Equals(objective.Id) &&
                 x.Type.Equals(NotificationTypes.OBJECTIVE_EXPIRING_TOMORROW));
-            if (objective.FinalDate.AddDays(-1).Equals(finalDate) && !hasExpiringTomorrowNotification)
+            if (objective.FinalDate.AddDays(-1).Date.Equals(today.Date))
             {
-                notificationsToAdd.Add(new Notification(
-                    $"O objetivo {objective.Description} está prestes a expirar! A data de conclusão é amanhã. " +
-                    $"Não deixe passar essa oportunidade. Você está quase lá!",
-                    NotificationTypes.OBJECTIVE_EXPIRING_TOMORROW,
-                    false,
-                    userId,
-                    objective.Id));
+                if (expiringTomorrowNotification is null)
+                    newNotifications.Add(new Notification(
+                        title: "Objetivo à expirar",
+                        message: $"O objetivo {objective.Description} está prestes a expirar! A data de conclusão é amanhã. " +
+                        $"Não deixe passar essa oportunidade. Você está quase lá!",
+                        type: NotificationTypes.OBJECTIVE_EXPIRING_TOMORROW,
+                        userId: userId,
+                        externalId: objective.Id));
             }
+            else if (expiringTomorrowNotification is not null)
+                _context.Notifications.Remove(expiringInFiveDaysNotification);
         }
 
-        // Operations Notifications
-        var operations = _operationRepository.GetOperations(userId, finalDate);
-        var firstDayOfMonth = new DateTime(finalDate.Year, finalDate.Month, 1);
+        _uow.Commit();
+        return newNotifications;
+    }
+
+    private List<Notification> ProcessOperationsNotifications(
+        Guid userId,
+        DateTime today,
+        List<Notification> currentNotifications,
+        IEnumerable<OperationResult> operations)
+    {
+        var newNotifications = new List<Notification>();
+        var firstDayOfMonth = new DateTime(today.Year, today.Month, 1).Date;
         var outflowValue = operations
-            .Where(x => x.Date >= firstDayOfMonth && x.Type.Equals("O") && x.Effected)
+            .Where(x => x.Date >= firstDayOfMonth && x.Type.Equals('O') && x.Effected)
             .Sum(x => x.Value);
 
-        var hasFiveHundredOutflowNotification = notifications.Any(x =>
+        var fiveHundredOutflowNotification = currentNotifications.FirstOrDefault(x =>
             x.Date >= firstDayOfMonth &&
             x.Type.Equals(NotificationTypes.OPERATION_FIVE_HUNDRED_OUTFLOW));
-        if (outflowValue >= 500 && outflowValue < 1000 && !hasFiveHundredOutflowNotification)
+        if (outflowValue >= 500 && outflowValue < 1000)
         {
-            notificationsToAdd.Add(new Notification(
-                $"Seus gastos mensais ultrapassaram o valor de R$ 500,00!",
-                NotificationTypes.OPERATION_FIVE_HUNDRED_OUTFLOW,
-                false,
-                userId,
-                null));
+            if (fiveHundredOutflowNotification is null)
+                newNotifications.Add(new Notification(
+                    title: "Alerta de Gastos",
+                    message: $"Seus gastos mensais ultrapassaram o limite de R$ 500,00. " +
+                    $"Recomendamos revisar seu orçamento para garantir um gerenciamento financeiro saudável.",
+                    type: NotificationTypes.OPERATION_FIVE_HUNDRED_OUTFLOW,
+                    userId: userId,
+                    externalId: null));
         }
+        else if (fiveHundredOutflowNotification is not null)
+            _context.Notifications.Remove(fiveHundredOutflowNotification);
 
-        var hasOneThousandOutflowNotification = notifications.Any(x =>
+        var oneThousandOutflowNotification = currentNotifications.FirstOrDefault(x =>
             x.Date >= firstDayOfMonth &&
             x.Type.Equals(NotificationTypes.OPERATION_ONE_THOUSAND_OUTFLOW));
-        if (outflowValue >= 1000 && outflowValue < 2000 && !hasOneThousandOutflowNotification)
+        if (outflowValue >= 1000 && outflowValue < 2000)
         {
-            notificationsToAdd.Add(new Notification(
-                $"Seus gastos mensais ultrapassaram o valor de R$ 1.000,00!",
-                NotificationTypes.OPERATION_ONE_THOUSAND_OUTFLOW,
-                false,
-                userId,
-                null));
+            if (oneThousandOutflowNotification is null)
+                newNotifications.Add(new Notification(
+                    title: "Alerta de Gastos",
+                    message: $"Seus gastos mensais ultrapassaram o limite de R$ 1.000,00. " +
+                    $"Recomendamos uma análise cuidadosa do seu orçamento para manter o equilíbrio financeiro.",
+                    type: NotificationTypes.OPERATION_ONE_THOUSAND_OUTFLOW,
+                    userId: userId,
+                    externalId: null));
         }
+        else if (oneThousandOutflowNotification is not null)
+            _context.Notifications.Remove(oneThousandOutflowNotification);
 
-        var hasTwoThousandOutflowNotification = notifications.Any(x =>
+        var twoThousandOutflowNotification = currentNotifications.FirstOrDefault(x =>
             x.Date >= firstDayOfMonth &&
             x.Type.Equals(NotificationTypes.OPERATION_TWO_THOUSAND_OUTFLOW));
-        if (outflowValue >= 2000 && outflowValue < 3000 && !hasTwoThousandOutflowNotification)
+        if (outflowValue >= 2000 && outflowValue < 3000)
         {
-            notificationsToAdd.Add(new Notification(
-                $"Seus gastos mensais ultrapassaram o valor de R$ 2.000,00!",
-                NotificationTypes.OPERATION_TWO_THOUSAND_OUTFLOW,
-                false,
-                userId,
-                null));
+            if (twoThousandOutflowNotification is null)
+                newNotifications.Add(new Notification(
+                    title: "Alerta de Despesas",
+                    message: $"Observamos que seus gastos mensais ultrapassaram o valor de R$ 2.000,00. " +
+                    $"Recomendamos uma revisão do seu orçamento para garantir uma gestão financeira eficiente e equilibrada.",
+                    type: NotificationTypes.OPERATION_TWO_THOUSAND_OUTFLOW,
+                    userId: userId,
+                    externalId: null));
         }
+        else if (twoThousandOutflowNotification is not null)
+            _context.Notifications.RemoveRange(twoThousandOutflowNotification);
 
-        var hasThreeThousandOutflowNotification = notifications.Any(x =>
+        var threeThousandOutflowNotification = currentNotifications.FirstOrDefault(x =>
             x.Date >= firstDayOfMonth &&
             x.Type.Equals(NotificationTypes.OPERATION_THREE_THOUSAND_OUTFLOW));
-        if (outflowValue >= 3000 && outflowValue < 5000 && !hasThreeThousandOutflowNotification)
+        if (outflowValue >= 3000 && outflowValue < 5000)
         {
-            notificationsToAdd.Add(new Notification(
-                $"Seus gastos mensais ultrapassaram o valor de R$ 3.000,00!",
-                NotificationTypes.OPERATION_THREE_THOUSAND_OUTFLOW,
-                false,
-                userId,
-                null));
-        }
+            if (threeThousandOutflowNotification is null) 
+                newNotifications.Add(new Notification(
+                    title: "Alerta de Despesas",
+                    message: $"Notamos que seus gastos mensais excederam o valor de R$ 3.000,00. " +
+                    $"Recomendamos uma análise detalhada do seu orçamento para assegurar uma gestão financeira sustentável.",
+                    type: NotificationTypes.OPERATION_THREE_THOUSAND_OUTFLOW,
+                    userId: userId,
+                    externalId: null));
+        } else if (threeThousandOutflowNotification is not null)
+            _context.Notifications.Remove(threeThousandOutflowNotification);
 
-        var hasFiveThousandOutflowNotification = notifications.Any(x =>
+        var fiveThousandOutflowNotification = currentNotifications.FirstOrDefault(x =>
             x.Date >= firstDayOfMonth &&
             x.Type.Equals(NotificationTypes.OPERATION_FIVE_THOUSAND_OUTFLOW));
-        if (outflowValue >= 5000 && !hasFiveThousandOutflowNotification)
+        if (outflowValue >= 5000)
         {
-            notificationsToAdd.Add(new Notification(
-                $"Seus gastos mensais ultrapassaram o valor de R$ 5.000,00!",
-                NotificationTypes.OPERATION_FIVE_THOUSAND_OUTFLOW,
-                false,
-                userId,
-                null));
-        }
+            if (fiveThousandOutflowNotification is null)
+                newNotifications.Add(new Notification(
+                    title: "Alerta de Despesas",
+                    message: $"Informamos que seus gastos mensais ultrapassaram o valor de R$ 5.000,00. " +
+                    $"Sugerimos uma revisão cuidadosa do seu orçamento para garantir uma gestão financeira sólida.",
+                    type: NotificationTypes.OPERATION_FIVE_THOUSAND_OUTFLOW,
+                    userId: userId,
+                    externalId: null));
+        } else if (fiveHundredOutflowNotification is not null)
+            _context.Notifications.Remove(fiveThousandOutflowNotification);
 
         var operationsNotEffected = operations.Where(x => !x.Effected);
         foreach (var operation in operationsNotEffected)
         {
-            var hasEffectOperationNotification = notifications.Any(x =>
+            var hasEffectOperationNotification = currentNotifications.Any(x =>
                 x.ExternalId.Equals(operation.Id) &&
                 x.Type.Equals(NotificationTypes.EFFECT_OPERATION));
-
             if (!hasEffectOperationNotification)
             {
-                notificationsToAdd.Add(new Notification(
-                    $"A operação {operation.Description} já pode ser efetuada. " +
-                    $"Verifique seus gastos/rendimentos para confirmar a movimentação!",
+                newNotifications.Add(new Notification(
+                    title: "Operação à efetuar",
+                    message: $"A operação {operation.Description} - {operation.Date:dd/MM/yyyy} já pode ser efetuada. " +
+                    $"Recomendamos que você verifique seus registros e/ou extratos para confirmar se " +
+                    $"a operação foi concluída com sucesso antes de prosseguir com sua efetuação.",
                     NotificationTypes.EFFECT_OPERATION,
-                    false,
-                    userId,
-                    operation.Id));
+                    userId: userId,
+                    externalId: operation.Id));
             }
         }
 
+        _context.Notifications.RemoveRange(currentNotifications.Where(x =>
+            x.Type.Equals(NotificationTypes.EFFECT_OPERATION) &&
+            operations.Any(y => y.Id.Equals(x.ExternalId) && y.Effected)));
 
-        // Categories Notifications
-        var categories = _categoryRepository.GetCategories(userId);
-        List<CategoryAllocationResult> categoryAllocations = new();
+        _uow.Commit();
+        return newNotifications;
+    }
 
+    private List<Notification> ProcessCategoriesNotifications(
+        Guid userId,
+        DateTime today,
+        List<Notification> currentNotifications,
+        IEnumerable<CategoryResult> categories,
+        IEnumerable<OperationResult> operations)
+    {
+        var newNotifications = new List<Notification>();
+        var firstDayOfMonth = new DateTime(today.Year, today.Month, 1).Date;
+        var categoryAllocations = new List<CategoryAllocationResult>();
         foreach (var category in categories)
         {
-            var value = operations.Where(x => x.CategoryId.Equals(category.Id)).Sum(x => x.Type.Equals('I') ? x.Value : (x.Value * -1));
+            var value = operations.Where(x => 
+                x.Date >= firstDayOfMonth && 
+                x.CategoryId.Equals(category.Id))
+                .Sum(x => x.Type.Equals('I') ? x.Value : (x.Value * -1));
             categoryAllocations.Add(new(
                 Id: category.Id,
                 Name: category.Name,
@@ -219,69 +305,76 @@ public class NotificationRepository : INotificationRepository
                 Allocation: 0.0M,
                 Count: 0));
 
-            var hasLimitExceededNotification = notifications.Any(x =>
+            var limitExceededNotification = currentNotifications.FirstOrDefault(x =>
                 x.ExternalId.Equals(category.Id) &&
                 x.Type.Equals(NotificationTypes.CATEGORY_LIMIT_EXCEEDED));
-            if (category.MaxValueMonthly is not null && Math.Abs(value) >= category.MaxValueMonthly && !hasLimitExceededNotification)
+            if (category.MaxValueMonthly is not null && Math.Abs(value) >= category.MaxValueMonthly)
             {
-                notificationsToAdd.Add(new Notification(
-                    $"O limite mensal da categoria {category.Name} foi atingido. " +
-                    $"Verifique suas movimentações para garantir que esteja alinhado com suas expectativas!",
-                    NotificationTypes.CATEGORY_LIMIT_EXCEEDED,
-                    false,
-                    userId,
-                    category.Id));
+                if (limitExceededNotification is null)
+                    newNotifications.Add(new Notification(
+                        title: "Limite de Categoria Atingido",
+                        message: $"O limite mensal da categoria {category.Name} foi atingido. " +
+                        $"Verifique suas movimentações para garantir que esteja alinhado com suas expectativas.",
+                        type: NotificationTypes.CATEGORY_LIMIT_EXCEEDED,
+                        userId: userId,
+                        externalId: category.Id));
             }
+            else if (limitExceededNotification is not null)
+                _context.Notifications.Remove(limitExceededNotification);
         }
 
-        if (finalDate.Equals(new DateTime(finalDate.AddMonths(1).Year, finalDate.AddMonths(1).Month, 1).AddDays(-1)))
+        if (today.Date.Equals(new DateTime(today.Year, today.Month, 1).AddMonths(1).AddDays(-1).Date))
         {
             var bestCategory = categoryAllocations.MaxBy(x => x.Value);
+            _context.Notifications.RemoveRange(currentNotifications.Where(x =>
+                x.Date >= firstDayOfMonth && 
+                x.Type.Equals(NotificationTypes.CATEGORY_BEST_RESULTS) &&
+                !x.ExternalId.Equals(bestCategory.Id)));
+
+            var bestResultsNotification = currentNotifications.FirstOrDefault(x =>
+                x.Date >= firstDayOfMonth &&
+                x.ExternalId.Equals(bestCategory.Id) &&
+                x.Type.Equals(NotificationTypes.CATEGORY_BEST_RESULTS));
+            if (bestCategory.Value >= 0)
+            {
+                if (bestResultsNotification is null)
+                    newNotifications.Add(new Notification(
+                        title: "Melhor Categoria no Mês",
+                        message: $"Informamos que, neste mês, a categoria {bestCategory.Name} registrou o maior lucro entre as demais. " +
+                        $"Agradecemos pelo seu comprometimento e eficiência na gestão financeira.",
+                        NotificationTypes.CATEGORY_BEST_RESULTS,
+                        userId: userId,
+                        externalId: bestCategory.Id));
+            }
+            else if (bestResultsNotification is not null)
+                _context.Notifications.Remove(bestResultsNotification);
+
             var worstCategory = categoryAllocations.MinBy(x => x.Value);
-
-            _context.Notifications.RemoveRange(notifications.Where(x =>
+            _context.Notifications.RemoveRange(currentNotifications.Where(x =>
                 x.Date >= firstDayOfMonth &&
-                (!x.ExternalId.Equals(bestCategory.Id) && x.Type.Equals(NotificationTypes.CATEGORY_BEST_RESULTS) ||
-                (!x.ExternalId.Equals(worstCategory.Id) && x.Type.Equals(NotificationTypes.CATEGORY_WORST_RESULTS)))));
-            _uow.Commit();
+                x.Type.Equals(NotificationTypes.CATEGORY_WORST_RESULTS) &&
+                !x.ExternalId.Equals(worstCategory.Id)));
 
-            var hasBestResultsNotification = notifications.Any(x =>
+            var worstResultsNotification = currentNotifications.FirstOrDefault(x =>
                 x.Date >= firstDayOfMonth &&
-                x.ExternalId.Equals(bestCategory.Id) &&
-                x.Type.Equals(NotificationTypes.CATEGORY_BEST_RESULTS));
-            if (!hasBestResultsNotification && bestCategory.Value >= 0)
+                x.ExternalId.Equals(worstCategory.Id) &&
+                x.Type.Equals(NotificationTypes.CATEGORY_WORST_RESULTS));
+            if (worstCategory.Value < 0)
             {
-                notificationsToAdd.Add(new Notification(
-                    $"Último dia do mês! A categoria {bestCategory.Name} foi a que obteve mais lucro, " +
-                    $"com um valor total de {bestCategory.Value}!",
-                    NotificationTypes.CATEGORY_BEST_RESULTS,
-                    false,
-                    userId,
-                    bestCategory.Id));
+                if (worstResultsNotification is null)
+                    newNotifications.Add(new Notification(
+                        title: "Pior Categoria no Mês",
+                        message: $"No decorrer deste mês, observamos que a categoria {worstCategory.Name} apresentou a maior perda. " +
+                        $"Solicitamos sua atenção para avaliar e ajustar estratégias conforme necessário.",
+                        NotificationTypes.CATEGORY_BEST_RESULTS,
+                        userId: userId,
+                        externalId: bestCategory.Id));
             }
-
-            var hasWorstResultsNotification = notifications.Any(x =>
-                x.Date >= firstDayOfMonth &&
-                x.ExternalId.Equals(bestCategory.Id) &&
-                x.Type.Equals(NotificationTypes.CATEGORY_BEST_RESULTS));
-            if (!hasWorstResultsNotification && bestCategory.Value < 0)
-            {
-                notificationsToAdd.Add(new Notification(
-                    $"Último dia do mês! A categoria {bestCategory.Name} foi a que obteve mais perda, " +
-                    $"com um valor total de {Math.Abs(bestCategory.Value)}!",
-                    NotificationTypes.CATEGORY_BEST_RESULTS,
-                    false,
-                    userId,
-                    bestCategory.Id));
-            }
-            _uow.Commit();
+            else if (worstResultsNotification is not null)
+                _context.Notifications.Remove(worstResultsNotification);
         }
 
-        _context.Notifications.AddRange(notificationsToAdd);
         _uow.Commit();
-
-        return _context.Notifications.Where(x => x.UserId.Equals(userId))
-            .OrderByDescending(x => x.Date)
-            .Select(NotificationResult.Create);
+        return newNotifications;
     }
 }

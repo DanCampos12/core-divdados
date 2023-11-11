@@ -12,8 +12,10 @@ public class NotificationResult
         Id = notification.Id;
         Date = notification.Date;
         Type = notification.Type;
+        Title = notification.Title;
         Message = notification.Message;
         Read = notification.Read;
+        Removed = notification.Removed;
         UserId = notification.UserId;
         ExternalId = notification.ExternalId;
     }
@@ -21,10 +23,12 @@ public class NotificationResult
     public Guid Id { get; set; }
     public DateTime Date { get; set; }
     public string Type { get; set; }
-    public string Message { get; private set; }
-    public bool Read { get; private set; }
-    public Guid UserId { get; private set; }
-    public Guid? ExternalId { get; private set; }
+    public string Title { get; set; }
+    public string Message { get; set; }
+    public bool Read { get; set; }
+    public bool Removed { get; set; }
+    public Guid UserId { get; set; }
+    public Guid? ExternalId { get; set; }
 
     public static NotificationResult Create(Notification notification) => new(notification);
 }

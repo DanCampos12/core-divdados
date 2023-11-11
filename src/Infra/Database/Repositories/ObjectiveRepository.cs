@@ -15,7 +15,7 @@ public class ObjectiveRepository : IObjectiveRepository
 {
     public UserDataContext _context;
 
-    public ObjectiveRepository(UserDataContext context, IUow uow)
+    public ObjectiveRepository(UserDataContext context)
         => _context = context;
 
     public Objective GetObjective(Guid id, Guid userId) => _context.Objectives
@@ -107,12 +107,12 @@ public class ObjectiveRepository : IObjectiveRepository
     public ObjectiveResult Complete(Objective objective, bool shouldLaunchOperation)
     {
         var notification = new Notification(
-            $"Parabéns por concluir o objetivo {objective.Description}! " +
+            title: "Objetivo concluído",
+            message: $"Parabéns por concluir o objetivo {objective.Description}! " +
             $"Agora é hora de focar no próximo desafio. Vamos continuar a jornada juntos.",
-            NotificationTypes.OBJECTIVE_COMPLETED,
-            false,
-            objective.UserId,
-            objective.Id);
+            type: NotificationTypes.OBJECTIVE_COMPLETED,
+            userId: objective.UserId,
+            externalId: objective.Id);
 
         _context.Objectives.Update(objective);
         _context.Notifications.Add(notification); 
@@ -152,12 +152,12 @@ public class ObjectiveRepository : IObjectiveRepository
             objectiveToUpdateStatus.UpdateStatus(ObjectiveStatus.EXPIRED);
 
         var notifications = objectivesToUpdateStatus.Select(x => new Notification(
-            $"O objetivo {x.Description} expirou. Não desanime. " +
+            title: "Objetivo expirado",
+            message: $"O objetivo {x.Description} expirou. Não desanime. " +
             $"Use essa experiência para crescer e definir novas metas. O sucesso está a caminho!",
-            NotificationTypes.OBJECTIVE_EXPIRED,
-            false,
-            x.UserId, 
-            x.Id));
+            type: NotificationTypes.OBJECTIVE_EXPIRED,
+            userId: x.UserId, 
+            externalId: x.Id));
         
         _context.Objectives.UpdateRange(objectivesToUpdateStatus);
         _context.Notifications.AddRange(notifications);
@@ -185,10 +185,6 @@ public class ObjectiveRepository : IObjectiveRepository
         }
 
         _context.Objectives.UpdateRange(objectives);
-        _context.Notifications.RemoveRange(_context.Notifications.Where(x =>
-            x.UserId.Equals(userId) &&
-            objectives.Any(y => y.Status.Equals(ObjectiveStatus.IN_PROGRESS) && y.Id.Equals(x.ExternalId)) &&
-            (x.Type.Equals(NotificationTypes.OBJECTIVE_HALF_COMPLETED) || x.Type.Equals(NotificationTypes.OBJECTIVE_FINISHED))));
         return objectives.Select(x => ObjectiveResult.Create(x, x.Status.Equals("completed") ? 1.0M : 0.0M));
     }
 
