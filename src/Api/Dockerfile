@@ -25,6 +25,6 @@ FROM base AS final
 COPY --from=publish /publish .
 
 ENV ASPNETCORE_URLS http://*:5000
-ENV ASPNETCORE_ENVIRONMENT Local
+ENV ASPNETCORE_ENVIRONMENT Production.Local
 EXPOSE 5000
 ENTRYPOINT ["dotnet", "Core.Divdados.Api.dll", "--server.urls", "http://*:5000"]

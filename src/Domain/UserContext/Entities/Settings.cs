@@ -4,6 +4,7 @@ public class Settings
 {
     public string Environment { get; set; }
     public string ConnectionString { get; set; }
+    public string ClientURL { get; set; }
     public JwtBearer JwtBearer { get; set; }
     public SendGrid SendGrid { get; set; }
 }

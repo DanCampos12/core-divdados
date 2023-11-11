@@ -1,4 +1,5 @@
 ﻿using Core.Divdados.Domain.UserContext.Entities;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.IdentityModel.Tokens.Jwt;
@@ -69,6 +70,25 @@ public sealed class AuthService
         {
             return false;
         }
+    }
+
+    public Guid GetUserId (string idToken)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.UTF8.GetBytes(_jwtBearer.SecretKey);
+        var validatedToken = tokenHandler.ValidateToken(idToken, new TokenValidationParameters()
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = _jwtBearer.ValidIssuer,
+            ValidAudience = _jwtBearer.ValidAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ClockSkew = TimeSpan.Zero
+        }, out var _);
+
+        return Guid.Parse(validatedToken.Claims.FirstOrDefault(x => x.Type.Equals("userId")).Value);
     }
 
     public static string EncryptPassword(string password)

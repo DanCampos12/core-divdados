@@ -39,17 +39,18 @@ public sealed class RefreshTokenHandler : Handler<RefreshTokenCommand, RefreshTo
             return Incomplete();
         }
 
-        var user = _userRepository.Get(command.Id);
-        if (user is null)
-        {
-            AddNotification(nameof(User), $"Usuário ({command.Id}) não encontrado");
-            return Incomplete();
-        }
-
-        var isValidToken = _authService.ValidateToken(command.IdToken, command.Id);
+        var isValidToken = _authService.ValidateToken(command.IdToken);
         if (!isValidToken)
         {
             AddNotification(nameof(User), "Não foi possível autenticar o usuário");
+            return Incomplete();
+        }
+
+        var userId = _authService.GetUserId(command.IdToken);
+        var user = _userRepository.Get(userId);
+        if (user is null)
+        {
+            AddNotification(nameof(User), $"Usuário ({userId}) não encontrado");
             return Incomplete();
         }
 

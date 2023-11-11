@@ -13,5 +13,5 @@ public interface IUserRepository
     UserResult Add(User user);
     UserResult Update(User user);
     UserResult UpdatePreference(User user, Preference preference);
-    Task<string> RecoverPassword(User user, string idToken, string apiKey);
+    Task<string> RecoverPassword(User user, string accessURL, string apiKey);
 }

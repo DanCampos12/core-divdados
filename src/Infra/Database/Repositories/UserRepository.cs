@@ -71,11 +71,10 @@ public class UserRepository : IUserRepository
     public Preference GetPreference(Guid userId) =>
         _context.Preferences.FirstOrDefault(x => x.UserId.Equals(userId));
 
-    public async Task<string> RecoverPassword(User user, string idToken, string apiKey)
+    public async Task<string> RecoverPassword(User user, string accessURL, string apiKey)
     {
         try
         {
-            var accessUrl = $"https://divdados.com.br?idToken={idToken}";
             var client = new SendGridClient(apiKey);
             var emailRequest = MailHelper.CreateSingleEmail(
                 from: new EmailAddress("suporte@divdados.com.br", "Equipe DivDados"),
@@ -90,7 +89,7 @@ public class UserRepository : IUserRepository
                             Parece que você esqueceu a sua senha 🤔 <br>
                             Recebemos o seu pedido de redefinição! <br><br>
                             Clique no link abaixo para criar uma nova senha. <br>
-                            Link de acesso: <a href=""{accessUrl}"">https://divdados.com.br/auth/change-password</a> <br>
+                            Link de acesso: <a href=""{accessURL}"">https://divdados.com.br/auth/change-password</a> <br>
                             <b>Observação</b>: O link possui uma duração de 30 minutos. Faça uma outra solicitação caso o tempo tenha excedido. <br><br>
                             Caso não tenha solicitado a alteração, por favor, desconsidere o e-mail. <br>
                             Se precisar de alguma ajuda, entre em contato conosco através do e-mail: 

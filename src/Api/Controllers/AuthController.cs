@@ -39,14 +39,13 @@ public class AuthController : Controller
     /// <returns>Usuário e Token</returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RefreshTokenCommandResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [HttpPost("v1/users/{userId:guid}/auth/refresh-token")]
-    public async Task<IActionResult> RefreshToken(Guid userId, [FromBody] RefreshTokenCommand command)
+    [HttpPost("v1/users/auth/refresh-token")]
+    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenCommand command)
     {
-        command.Id = userId;
         var commandResult = await _mediator.Send(command);
 
         if (commandResult.Invalid)
-            return Unauthorized($"Falha na autenticação do usuário ({command.Id})");
+            return Unauthorized($"Falha na autenticação do usuário.");
 
         return Response(commandResult);
     }
