@@ -79,7 +79,7 @@ create table "Notifications" (
     , "Type" varchar(30) not null
     , "Date" timestamp not null
     , "Title" varchar(50) not null
-    , "Message" varchar(100) not null
+    , "Message" varchar(500) not null
     , "Read" boolean not null
     , "Removed" boolean not null
     , "UserId" uuid not null

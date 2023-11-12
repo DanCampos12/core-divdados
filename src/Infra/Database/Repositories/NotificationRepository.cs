@@ -4,13 +4,9 @@ using Core.Divdados.Domain.UserContext.Repositories;
 using Core.Divdados.Domain.UserContext.Results;
 using Core.Divdados.Infra.SQL.DataContext;
 using Core.Divdados.Shared.Uow;
-using Microsoft.AspNetCore.JsonPatch.Operations;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.AccessControl;
-using System.Threading;
 
 namespace Core.Divdados.Infra.SQL.Repositories;
 
@@ -56,16 +52,18 @@ public class NotificationRepository : INotificationRepository
 
         DeleteNotifications(userId, today);
         var currentNotifications = _context.Notifications.Where(x => x.UserId.Equals(userId)).ToList();
-        newNotifications.AddRange(ProcessObjectivesNotifications(userId, today, currentNotifications, objectives));
         newNotifications.AddRange(ProcessOperationsNotifications(userId, today, currentNotifications, operations));
         newNotifications.AddRange(ProcessCategoriesNotifications(userId, today, currentNotifications, categories, operations));
+        newNotifications.AddRange(ProcessObjectivesNotifications(userId, today, currentNotifications, objectives));
 
         _context.Notifications.AddRange(newNotifications);
         _uow.Commit();
 
-        return _context.Notifications.Where(x => x.UserId.Equals(userId))
-            .OrderByDescending(x => x.Date)
-            .Select(NotificationResult.Create);
+        return (from notification in _context.Notifications
+                where notification.UserId.Equals(userId) && !notification.Removed
+                orderby notification.Read ascending, notification.Date descending
+                select NotificationResult.Create(notification))
+            .ToArray();
     }
 
     private void DeleteNotifications(Guid userId, DateTime today)
@@ -93,7 +91,7 @@ public class NotificationRepository : INotificationRepository
                 if (halfCompletedNotification is null)
                     newNotifications.Add(new Notification(
                         title: "Objetivo 50% atingido",
-                        message: $"Parabéns! Você já completou 50% do objetivo {objective.Description}. " +
+                        message: $"Parabéns! Você já completou 50% do objetivo {objective.Description.ToLower()}. " +
                         $"Continue assim, você está no caminho certo!",
                         type: NotificationTypes.OBJECTIVE_HALF_COMPLETED,
                         userId: userId,
@@ -110,7 +108,7 @@ public class NotificationRepository : INotificationRepository
                 if (finishedNotification is null)
                     newNotifications.Add(new Notification(
                         title: "Objetivo 100% atingido",
-                        message: $"Parabéns! Você completou 100% do objetivo {objective.Description}. " +
+                        message: $"Parabéns! Você completou 100% do objetivo {objective.Description.ToLower()}. " +
                         $"Agora você está apto a concluí-lo!",
                         type: NotificationTypes.OBJECTIVE_FINISHED,
                         userId: userId,
@@ -127,7 +125,7 @@ public class NotificationRepository : INotificationRepository
                 if (expiringInFiveDaysNotification is null)
                     newNotifications.Add(new Notification(
                         title: "Objetivo à expirar",
-                        message: $"O objetivo {objective.Description} expira em 5 dias. " +
+                        message: $"O objetivo {objective.Description.ToLower()} expira em 5 dias. " +
                         $"Mantenha o foco e continue trabalhando para atingir sua meta a tempo. " +
                         $"Você está no caminho certo! ",
                         type: NotificationTypes.OBJECTIVE_EXPIRING_IN_FIVE_DAYS,
@@ -145,7 +143,7 @@ public class NotificationRepository : INotificationRepository
                 if (expiringTomorrowNotification is null)
                     newNotifications.Add(new Notification(
                         title: "Objetivo à expirar",
-                        message: $"O objetivo {objective.Description} está prestes a expirar! A data de conclusão é amanhã. " +
+                        message: $"O objetivo {objective.Description.ToLower()} está prestes a expirar! A data de conclusão é amanhã. " +
                         $"Não deixe passar essa oportunidade. Você está quase lá!",
                         type: NotificationTypes.OBJECTIVE_EXPIRING_TOMORROW,
                         userId: userId,
@@ -178,7 +176,7 @@ public class NotificationRepository : INotificationRepository
         {
             if (fiveHundredOutflowNotification is null)
                 newNotifications.Add(new Notification(
-                    title: "Alerta de Gastos",
+                    title: "Alerta de gastos",
                     message: $"Seus gastos mensais ultrapassaram o limite de R$ 500,00. " +
                     $"Recomendamos revisar seu orçamento para garantir um gerenciamento financeiro saudável.",
                     type: NotificationTypes.OPERATION_FIVE_HUNDRED_OUTFLOW,
@@ -195,7 +193,7 @@ public class NotificationRepository : INotificationRepository
         {
             if (oneThousandOutflowNotification is null)
                 newNotifications.Add(new Notification(
-                    title: "Alerta de Gastos",
+                    title: "Alerta de gastos",
                     message: $"Seus gastos mensais ultrapassaram o limite de R$ 1.000,00. " +
                     $"Recomendamos uma análise cuidadosa do seu orçamento para manter o equilíbrio financeiro.",
                     type: NotificationTypes.OPERATION_ONE_THOUSAND_OUTFLOW,
@@ -212,7 +210,7 @@ public class NotificationRepository : INotificationRepository
         {
             if (twoThousandOutflowNotification is null)
                 newNotifications.Add(new Notification(
-                    title: "Alerta de Despesas",
+                    title: "Alerta de despesas",
                     message: $"Observamos que seus gastos mensais ultrapassaram o valor de R$ 2.000,00. " +
                     $"Recomendamos uma revisão do seu orçamento para garantir uma gestão financeira eficiente e equilibrada.",
                     type: NotificationTypes.OPERATION_TWO_THOUSAND_OUTFLOW,
@@ -229,7 +227,7 @@ public class NotificationRepository : INotificationRepository
         {
             if (threeThousandOutflowNotification is null) 
                 newNotifications.Add(new Notification(
-                    title: "Alerta de Despesas",
+                    title: "Alerta de despesas",
                     message: $"Notamos que seus gastos mensais excederam o valor de R$ 3.000,00. " +
                     $"Recomendamos uma análise detalhada do seu orçamento para assegurar uma gestão financeira sustentável.",
                     type: NotificationTypes.OPERATION_THREE_THOUSAND_OUTFLOW,
@@ -245,7 +243,7 @@ public class NotificationRepository : INotificationRepository
         {
             if (fiveThousandOutflowNotification is null)
                 newNotifications.Add(new Notification(
-                    title: "Alerta de Despesas",
+                    title: "Alerta de despesas",
                     message: $"Informamos que seus gastos mensais ultrapassaram o valor de R$ 5.000,00. " +
                     $"Sugerimos uma revisão cuidadosa do seu orçamento para garantir uma gestão financeira sólida.",
                     type: NotificationTypes.OPERATION_FIVE_THOUSAND_OUTFLOW,
@@ -264,7 +262,7 @@ public class NotificationRepository : INotificationRepository
             {
                 newNotifications.Add(new Notification(
                     title: "Operação à efetuar",
-                    message: $"A operação {operation.Description} - {operation.Date:dd/MM/yyyy} já pode ser efetuada. " +
+                    message: $"A operação {operation.Description.ToLower()} - {operation.Date:dd/MM/yyyy} já pode ser efetuada. " +
                     $"Recomendamos que você verifique seus registros e/ou extratos para confirmar se " +
                     $"a operação foi concluída com sucesso antes de prosseguir com sua efetuação.",
                     NotificationTypes.EFFECT_OPERATION,
@@ -312,8 +310,8 @@ public class NotificationRepository : INotificationRepository
             {
                 if (limitExceededNotification is null)
                     newNotifications.Add(new Notification(
-                        title: "Limite de Categoria Atingido",
-                        message: $"O limite mensal da categoria {category.Name} foi atingido. " +
+                        title: "Limite de categoria atingido",
+                        message: $"O limite mensal da categoria {category.Name.ToLower()} foi atingido. " +
                         $"Verifique suas movimentações para garantir que esteja alinhado com suas expectativas.",
                         type: NotificationTypes.CATEGORY_LIMIT_EXCEEDED,
                         userId: userId,
@@ -339,8 +337,8 @@ public class NotificationRepository : INotificationRepository
             {
                 if (bestResultsNotification is null)
                     newNotifications.Add(new Notification(
-                        title: "Melhor Categoria no Mês",
-                        message: $"Informamos que, neste mês, a categoria {bestCategory.Name} registrou o maior lucro entre as demais. " +
+                        title: "Melhor categoria no mês",
+                        message: $"Informamos que, neste mês, a categoria {bestCategory.Name.ToLower()} registrou o maior lucro entre as demais. " +
                         $"Agradecemos pelo seu comprometimento e eficiência na gestão financeira.",
                         NotificationTypes.CATEGORY_BEST_RESULTS,
                         userId: userId,
@@ -363,10 +361,10 @@ public class NotificationRepository : INotificationRepository
             {
                 if (worstResultsNotification is null)
                     newNotifications.Add(new Notification(
-                        title: "Pior Categoria no Mês",
-                        message: $"No decorrer deste mês, observamos que a categoria {worstCategory.Name} apresentou a maior perda. " +
+                        title: "Pior categoria no mês",
+                        message: $"No decorrer deste mês, observamos que a categoria {worstCategory.Name.ToLower()} apresentou a maior perda. " +
                         $"Solicitamos sua atenção para avaliar e ajustar estratégias conforme necessário.",
-                        NotificationTypes.CATEGORY_BEST_RESULTS,
+                        NotificationTypes.CATEGORY_WORST_RESULTS,
                         userId: userId,
                         externalId: bestCategory.Id));
             }
