@@ -6,7 +6,6 @@ create table "Users" (
     , "BirthDate" date not null
 	, "Email" varchar(100) not null
 	, "Password" varchar(500) not null
-    , "Effected" boolean not null
     , "FlowComplete" boolean not null
 );
 alter table "Users" add constraint "PK_User_Id" primary key("Id");
@@ -55,7 +54,7 @@ create table "Operations" (
     , "Effected" boolean not null
     , "UserId" uuid not null
     , "CategoryId" uuid not null
-    , "EventId" uuid
+    , "EventId" uuid null
 );
 alter table "Operations" add constraint "PK_Operation_Id" primary key("Id");
 alter table "Operations" add constraint "FK_Operation_UserId" foreign key("UserId") references "Users"("Id");
@@ -83,7 +82,7 @@ create table "Notifications" (
     , "Read" boolean not null
     , "Removed" boolean not null
     , "UserId" uuid not null
-    , "ExternalId" uuid
+    , "ExternalId" uuid null
 );
 alter table "Notifications" add constraint "PK_Notification_Id" primary key("Id");
 alter table "Notifications" add constraint "FK_Notification_UserId" foreign key("UserId") references "Users"("Id");
