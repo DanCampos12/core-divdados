@@ -150,7 +150,7 @@ public class NotificationRepository : INotificationRepository
                         externalId: objective.Id));
             }
             else if (expiringTomorrowNotification is not null)
-                _context.Notifications.Remove(expiringInFiveDaysNotification);
+                _context.Notifications.Remove(expiringTomorrowNotification);
         }
 
         _uow.Commit();
@@ -249,7 +249,7 @@ public class NotificationRepository : INotificationRepository
                     type: NotificationTypes.OPERATION_FIVE_THOUSAND_OUTFLOW,
                     userId: userId,
                     externalId: null));
-        } else if (fiveHundredOutflowNotification is not null)
+        } else if (fiveThousandOutflowNotification is not null)
             _context.Notifications.Remove(fiveThousandOutflowNotification);
 
         var operationsNotEffected = operations.Where(x => !x.Effected);
