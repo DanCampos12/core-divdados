@@ -59,7 +59,7 @@ public class EventRepository : IEventRepository
         var operationsToUpdate = _context.Operations.Where(x => x.EventId.Equals(@event.Id));
 
         foreach (var operation in operationsToUpdate)
-            operation.Update(@event.Value, @event.Description, @event.CategoryId);
+            operation.Update(@event.Value, operation.Type, @event.Description, operation.Date, @event.CategoryId);
 
         _context.Events.Update(@event);
         _context.Operations.UpdateRange(operationsToUpdate);

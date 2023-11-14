@@ -50,7 +50,7 @@ public sealed class UpdateOperationHandler : Handler<UpdateOperationCommand, Upd
         Validate(command.UserId, command.CategoryId);
         if (Invalid) return Incomplete();
 
-        operation.Update(command.Value, command.Description, command.CategoryId);
+        operation.Update(command.Value, command.Type, command.Description, command.Date, command.CategoryId);
         AddNotifications(operation);
         if (Invalid) return Incomplete();
 

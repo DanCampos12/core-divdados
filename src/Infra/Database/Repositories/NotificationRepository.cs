@@ -177,7 +177,7 @@ public class NotificationRepository : INotificationRepository
             if (fiveHundredOutflowNotification is null)
                 newNotifications.Add(new Notification(
                     title: "Alerta de gastos",
-                    message: $"Seus gastos mensais ultrapassaram o limite de R$ 500,00. " +
+                    message: $"Seus gastos mensais ultrapassaram o valor de R$ 500,00. " +
                     $"Recomendamos revisar seu orçamento para garantir um gerenciamento financeiro saudável.",
                     type: NotificationTypes.OPERATION_FIVE_HUNDRED_OUTFLOW,
                     userId: userId,
@@ -194,7 +194,7 @@ public class NotificationRepository : INotificationRepository
             if (oneThousandOutflowNotification is null)
                 newNotifications.Add(new Notification(
                     title: "Alerta de gastos",
-                    message: $"Seus gastos mensais ultrapassaram o limite de R$ 1.000,00. " +
+                    message: $"Seus gastos mensais ultrapassaram o valor de R$ 1.000,00. " +
                     $"Recomendamos uma análise cuidadosa do seu orçamento para manter o equilíbrio financeiro.",
                     type: NotificationTypes.OPERATION_ONE_THOUSAND_OUTFLOW,
                     userId: userId,

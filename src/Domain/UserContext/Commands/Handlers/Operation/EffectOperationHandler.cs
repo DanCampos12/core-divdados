@@ -4,6 +4,7 @@ using Core.Divdados.Domain.UserContext.Entities;
 using Core.Divdados.Domain.UserContext.Repositories;
 using Core.Divdados.Shared.Commands;
 using Core.Divdados.Shared.Uow;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -53,6 +54,7 @@ public sealed class EffectOperationHandler : Handler<EffectOperationCommand, Eff
         if (Invalid) return Incomplete();
 
         operation.SetEffected(true);
+        operation.UpdateDate(DateTime.Today);
         _commandResult.Operation = _operationRepository.Update(operation);
         _uow.Commit();
 

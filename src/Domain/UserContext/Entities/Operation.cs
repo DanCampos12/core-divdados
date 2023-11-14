@@ -46,10 +46,12 @@ public sealed class Operation : Entity
             .IsNotNullOrEmpty(CategoryId.ToString(), nameof(CategoryId), "Categoria da operação é obrigatório"));
     }
 
-    public void Update(decimal value, string description, Guid categoryId)
+    public void Update(decimal value, char type, string description, DateTime date, Guid categoryId)
     {
         Value = value;
+        Type = type;
         Description = description;
+        Date = date;
         CategoryId = categoryId; 
         AddNotifications(this);
     }
@@ -57,6 +59,12 @@ public sealed class Operation : Entity
     public void SetEffected (bool effected)
     {
         Effected = effected;
+        AddNotifications(this);
+    }
+
+    public void UpdateDate (DateTime date)
+    {
+        Date = date;
         AddNotifications(this);
     }
 }
