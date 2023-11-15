@@ -1,7 +1,7 @@
 {
   "AWSEBDockerrunVersion": "1",
   "Image": {
-    "Name": "463346631047.dkr.ecr.sa-east-1.amazonaws.com/core-divdados:1.1.0",
+    "Name": "463346631047.dkr.ecr.sa-east-1.amazonaws.com/core-divdados:1.1.1",
     "Update": "true"
   },
   "Ports": [

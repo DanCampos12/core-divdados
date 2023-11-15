@@ -23,7 +23,7 @@ public sealed class Notification : Entity
         Guid userId, 
         Guid? externalId) 
     {
-        Date = TimeZoneInfo.ConvertTime(DateTime.Now, TimeZoneInfo.Local, TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time"));
+        Date = DateTime.Now;
         Title = title;
         Message = message;
         Type = type;
