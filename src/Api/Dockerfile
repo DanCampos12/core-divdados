@@ -1,8 +1,8 @@
 # sudo docker build -t core-divdados -f src/Api/Dockerfile .;
-# sudo docker tag core-divdados:latest core-divdados:1.1.1;
+# sudo docker tag core-divdados:latest core-divdados:1.1.2;
 # aws ecr get-login-password --region sa-east-1 | sudo docker login --username AWS --password-stdin 463346631047.dkr.ecr.sa-east-1.amazonaws.com/core-divdados;
-# sudo docker tag core-divdados:1.1.1 463346631047.dkr.ecr.sa-east-1.amazonaws.com/core-divdados:1.1.1;
-# sudo docker push 463346631047.dkr.ecr.sa-east-1.amazonaws.com/core-divdados:1.1.1;
+# sudo docker tag core-divdados:1.1.2 463346631047.dkr.ecr.sa-east-1.amazonaws.com/core-divdados:1.1.2;
+# sudo docker push 463346631047.dkr.ecr.sa-east-1.amazonaws.com/core-divdados:1.1.2;
 # sudo docker run -p 5000:5000 core-divdados;
 
 FROM mcr.microsoft.com/dotnet/aspnet:7.0.0-alpine3.16 AS base

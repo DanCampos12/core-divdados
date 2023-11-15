@@ -10,7 +10,7 @@ public class NotificationResult
     private NotificationResult(Notification notification)
     {
         Id = notification.Id;
-        Date = notification.Date.AddHours(-3);
+        Date = notification.Date;
         Type = notification.Type;
         Title = notification.Title;
         Message = notification.Message;
