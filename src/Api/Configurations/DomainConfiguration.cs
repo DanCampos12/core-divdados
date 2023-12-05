@@ -1,13 +1,8 @@
-﻿using Core.Divdados.Shared.Uow;
-using Core.Divdados.Infra.SQL.Transactions;
-using Microsoft.Extensions.DependencyInjection;
-using Core.Divdados.Domain.UserContext.Repositories;
+﻿using Core.Divdados.Domain.UserContext.Repositories;
 using Core.Divdados.Infra.SQL.Repositories;
-using Core.Divdados.Domain.UserContext.Commands.Handlers;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Hosting;
-using System;
+using Core.Divdados.Infra.SQL.Transactions;
+using Core.Divdados.Shared.Uow;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Core.Divdados.Api.Configurations;
 
@@ -28,5 +23,11 @@ public static class DomainConfiguration
     private static void AddRepositories(this IServiceCollection services)
     {
         services.AddTransient<IUserRepository, UserRepository>();
+        services.AddTransient<ICategoryRepository, CategoryRepository>();
+        services.AddTransient<IEventRepository, EventRepository>();
+        services.AddTransient<IOperationRepository, OperationRepository>();
+        services.AddTransient<IObjectiveRepository, ObjectiveRepository>();
+        services.AddTransient<IOutputDataRepository, OutputDataRepository>();
+        services.AddTransient<INotificationRepository, NotificationRepository>();
     }
 }

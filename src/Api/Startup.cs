@@ -39,18 +39,19 @@ public class Startup
         services.AddDomainDependencies(_settingsModel);
         services.AddSwagger();
         services.AddMediator();
-        services.AddDbContext<UserDataContext>();
+        services.AddEntityFrameworkNpgsql().AddDbContext<UserDataContext>();
 
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
     }
 
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
         if (env.IsDevelopment())
             app.UseDeveloperExceptionPage();
         else
             app.UseHsts();
 
+        app.UseMiddleware<Authorizations.AuthorizationMiddleware>();
         app.UseHttpsRedirection();
         app.UseResponseCompression();
         app.UseCors(builder => builder

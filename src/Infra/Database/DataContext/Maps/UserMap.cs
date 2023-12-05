@@ -16,8 +16,7 @@ public class UserMap : ClassMap<User>
     protected override void MappingProperties(EntityTypeBuilder<User> builder)
     {
         builder.Property(e => e.Name).HasMaxLength(50).HasColumnType("varchar");
-        builder.Property(e => e.Surname).HasMaxLength(50).HasColumnType("varchar");
-        builder.Property(e => e.Age).HasColumnType("int");
+        builder.Property(e => e.BirthDate).HasColumnType("datetime");
         builder.Property(e => e.Sex).HasMaxLength(1).HasColumnType("char");
         builder.Property(e => e.Email).HasMaxLength(100).HasColumnType("varchar");
         builder.Property(e => e.Password).HasMaxLength(100).HasColumnType("varchar");

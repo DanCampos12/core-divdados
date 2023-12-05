@@ -2,43 +2,114 @@
 using Core.Divdados.Domain.UserContext.Repositories;
 using Core.Divdados.Domain.UserContext.Results;
 using Core.Divdados.Infra.SQL.DataContext;
+using Core.Divdados.Shared.Uow;
+using SendGrid;
+using SendGrid.Helpers.Mail;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Core.Divdados.Infra.SQL.Repositories;
+
+public record DefaultCategory(string Name, string Color);
 
 public class UserRepository : IUserRepository
 {
     public UserDataContext _context;
+    private IUow _uow;
 
-    public UserRepository(UserDataContext context) =>
+    public object ToAddresses { get; private set; }
+
+    public UserRepository(UserDataContext context, IUow uow)
+    {
         _context = context;
+        _uow = uow;
+    }
 
-    public void Add(User user) =>
-        _context.Add(user);
+    public User Get(Guid id) => _context.Users
+        .Where(user => user.Id.Equals(id))
+        .FirstOrDefault();
 
-    public void Update(User user) =>
-        _context.Update(user);
+    public User GetByEmail(string email) => _context.Users
+        .Where(user => user.Email.Equals(email))
+        .FirstOrDefault();
 
-    public void Delete(User user) =>
-        _context.Remove(user);
+    public UserResult Add(User user) {
+        _context.Users.Add(user);
+        _uow.Commit();
 
-    private IQueryable<UserResult> GetUserResultQuery(Guid id) =>
-        from user in _context.Users
-        where user.Id.Equals(id)
-        select new UserResult
+        var preference = new Preference(user.Id);
+        List<DefaultCategory> defaultCategories = new()
         {
-            Id = user.Id,
-            Name = user.Name,
-            Surname = user.Surname,
-            Email = user.Email,
-            Age = user.Age,
-            Sex = user.Sex
+            new("Alimentação", "#E57373"),
+            new("Educação", "#1565C0"),
+            new("Esporte", "#FFB74D"),
+            new("Impostos", "#C62828"),
+            new("Lazer", "#BA68C8"),
+            new("Objetivo", "#17967F"),
+            new("Salário", "#A5D6A7"),
+            new("Saúde", "#43A047")
         };
 
-    public UserResult Get(Guid id) =>
-        GetUserResultQuery(id).FirstOrDefault();
+        _context.Preferences.Add(preference);
+        _context.Categories.AddRange(defaultCategories.Select(x => new Category(
+            name: x.Name,
+            color: x.Color,
+            userId: user.Id,
+            isAutomaticInput: true,
+            maxValueMonthly: null)));
 
-    public bool CheckExist(string email) => _context.Users
-        .Where(user => user.Email == email).Any();
+        return UserResult.Create(user, preference);
+    }
+
+    public UserResult Update(User user) {
+        var preference = GetPreference(user.Id);
+        _context.Users.Update(user);
+        return UserResult.Create(user, preference);
+    }
+
+    public UserResult UpdatePreference(User user, Preference preference)
+    {
+        _context.Preferences.Update(preference);
+        return UserResult.Create(user, preference);
+    } 
+
+    public Preference GetPreference(Guid userId) =>
+        _context.Preferences.FirstOrDefault(x => x.UserId.Equals(userId));
+
+    public async Task<string> RecoverPassword(User user, string accessURL, string apiKey)
+    {
+        try
+        {
+            var client = new SendGridClient(apiKey);
+            var emailRequest = MailHelper.CreateSingleEmail(
+                from: new EmailAddress("suporte@divdados.com.br", "Equipe DivDados"),
+                to: new EmailAddress(user.Email, user.Name),
+                subject: "Equipe DivDados - Recuperação de senha",
+                plainTextContent: "",
+                htmlContent: $@"
+                    <!DOCTYPE html>
+                    <html>
+                        <div style=""font-size: 14px"">
+                            Olá, <b>{user.Name}</b>! <br><br>
+                            Parece que você esqueceu a sua senha 🤔 <br>
+                            Recebemos o seu pedido de redefinição! <br><br>
+                            Clique no link abaixo para criar uma nova senha. <br>
+                            Link de acesso: <a href=""{accessURL}"">https://divdados.com.br/auth/change-password</a> <br>
+                            <b>Observação</b>: O link possui uma duração de 30 minutos. Faça uma outra solicitação caso o tempo tenha excedido. <br><br>
+                            Caso não tenha solicitado a alteração, por favor, desconsidere o e-mail. <br>
+                            Se precisar de alguma ajuda, entre em contato conosco através do e-mail: 
+                            <a href=""mailto: suporte@divdados.com.br"">suporte@divdados.com.br</a>. <br>   
+                            Abraços.
+                        </div>
+                    </html>");
+
+            var emailResponse = await client.SendEmailAsync(emailRequest);
+            return $"Email enviado com sucesso.";
+        } catch (Exception ex)
+        {
+            return $"Ocorreu um erro ao enviar o email: {ex.Message}.";
+        }
+    }
 }

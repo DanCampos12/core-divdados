@@ -2,6 +2,7 @@
 using Core.Divdados.Domain.UserContext.Commands.Outputs;
 using Core.Divdados.Domain.UserContext.Entities;
 using Core.Divdados.Domain.UserContext.Repositories;
+using Core.Divdados.Domain.UserContext.Services;
 using Core.Divdados.Shared.Commands;
 using Core.Divdados.Shared.Uow;
 using Flunt.Validations;
@@ -14,11 +15,13 @@ public sealed class CreateUserHandler : Handler<CreateUserCommand, CreateUserCom
 {
     private readonly IUserRepository _userRepository;
     private readonly IUow _uow;
+    private readonly CreateUserCommandResult _commandResult;
 
     public CreateUserHandler(IUserRepository userRepository, IUow uow)
     {
         _userRepository = userRepository;
         _uow = uow;
+        _commandResult = new();
     }
 
     public override Task<CreateUserCommandResult> Handle(CreateUserCommand command, CancellationToken ct)
@@ -31,27 +34,28 @@ public sealed class CreateUserHandler : Handler<CreateUserCommand, CreateUserCom
 
         var user = new User(
             name: command.Name,
-            surname: command.Surname,
             email: command.Email,
-            password: command.Password,
-            age: command.Age,
-            sex: command.Sex);
+            password: AuthService.EncryptPassword(command.Password),
+            birthDate: command.BirthDate,
+            sex: command.Sex,
+            flowComplete: true);
         AddNotifications(user);
         if (Invalid) return Incomplete();
 
         Validate(user);
         if (Invalid) return Incomplete();
 
-        _userRepository.Add(user);
+        _commandResult.User = _userRepository.Add(user);
         _uow.Commit();
 
-        return Complete(user);
+        return Complete(_commandResult.User);
     }
 
     private void Validate(User user)
     {
         AddNotifications(new Contract()
             .Requires()
-            .IsFalse(_userRepository.CheckExist(user.Email), nameof(User), $"Email ({user.Email}) já cadastrado na base"));
+            .IsTrue(_userRepository.GetByEmail(user.Email) is null,
+                     nameof(User), $"Email ({user.Email}) já cadastrado"));
     }
 }

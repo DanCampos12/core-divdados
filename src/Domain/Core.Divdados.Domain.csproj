@@ -6,10 +6,12 @@
 
   <ItemGroup>
     <PackageReference Include="Flunt" Version="1.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Shared\Core.Divdados.Shared.csproj" /> 
+    <ProjectReference Include="..\Shared\Core.Divdados.Shared.csproj" />
   </ItemGroup>
 
 </Project>
